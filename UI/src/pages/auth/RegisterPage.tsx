@@ -2,7 +2,10 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { Mail, Lock, User } from 'lucide-react';
+import axios from 'axios';
+import { setCredentials } from '../../store/slices/authSlice';
 import { registerSchema } from '../../utils/validation/auth.schema';
 import type { RegisterFormData } from '../../utils/validation/auth.schema';
 import { Input } from '../../components/ui/Input';
@@ -10,6 +13,7 @@ import { Button } from '../../components/ui/Button';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -20,13 +24,12 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log('Register data:', data);
-      // On success, redirect to login or dashboard
-      navigate('/login');
-    } catch (error) {
+      const response = await axios.post('http://localhost:5000/api/auth/register', data);
+      dispatch(setCredentials({ user: response.data.user, token: response.data.token }));
+      navigate('/dashboard');
+    } catch (error: any) {
       console.error(error);
+      alert(error.response?.data?.message || 'Registration failed');
     }
   };
 
