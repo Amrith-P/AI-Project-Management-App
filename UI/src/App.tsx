@@ -7,6 +7,8 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ProjectsPage } from './pages/projects/ProjectsPage';
+import { ProjectDetailsPage } from './pages/projects/ProjectDetailsPage';
 
 function App() {
   return (
@@ -25,7 +27,9 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            {/* Future routes like /projects, /tasks will go here */}
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+            {/* Future routes like /tasks will go here */}
           </Route>
         </Route>
       </Routes>

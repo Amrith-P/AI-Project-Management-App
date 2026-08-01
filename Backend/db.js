@@ -17,7 +17,26 @@ export const getDb = async () => {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
+      );
+
+      CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'Active',
+        priority TEXT DEFAULT 'Medium',
+        category TEXT,
+        visibility TEXT DEFAULT 'Private',
+        progress INTEGER DEFAULT 0,
+        ownerId INTEGER NOT NULL,
+        startDate DATETIME,
+        endDate DATETIME,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        tags TEXT,
+        color TEXT,
+        FOREIGN KEY (ownerId) REFERENCES users (id)
+      );
     `);
     console.log('SQLite Database initialized');
   }
