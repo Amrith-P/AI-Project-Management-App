@@ -37,6 +37,18 @@ export const getDb = async () => {
         color TEXT,
         FOREIGN KEY (ownerId) REFERENCES users (id)
       );
+
+      CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'Todo',
+        position INTEGER DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
     `);
     console.log('SQLite Database initialized');
   }

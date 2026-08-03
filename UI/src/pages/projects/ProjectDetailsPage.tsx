@@ -16,10 +16,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { CreateProjectModal } from '../../components/projects/CreateProjectModal';
+import { Board } from '../../components/board/Board';
 
 export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'board'>('overview');
   const dispatch = useDispatch<AppDispatch>();
   const { currentProject, isLoading, error } = useSelector((state: RootState) => state.projects);
 
@@ -115,7 +117,34 @@ export const ProjectDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'overview'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('board')}
+            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'board'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Board
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === 'overview' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content (Left Column) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -218,6 +247,11 @@ export const ProjectDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+          <Board />
+        </div>
+      )}
 
       {isEditModalOpen && (
         <CreateProjectModal 
