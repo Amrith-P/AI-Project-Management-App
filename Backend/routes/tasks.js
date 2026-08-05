@@ -4,6 +4,28 @@ import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// GET all tasks for logged-in user across all projects
+router.get('/', verifyToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    
+    // Join tasks with projects to ensure user is the owner, and also fetch project name
+    const tasks = await db.all(`
+      SELECT tasks.*, projects.name as projectName 
+      FROM tasks 
+      JOIN projects ON tasks.projectId = projects.id 
+      WHERE projects.ownerId = ? 
+      ORDER BY tasks.updatedAt DESC
+    `, [req.user.id]);
+    
+    res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 // GET all tasks for a project
 router.get('/:projectId', verifyToken, async (req, res) => {
   try {

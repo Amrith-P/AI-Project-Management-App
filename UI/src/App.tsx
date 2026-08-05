@@ -9,6 +9,8 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { ProjectDetailsPage } from './pages/projects/ProjectDetailsPage';
+import { TasksPage } from './pages/tasks/TasksPage';
+import { TeamPage } from './pages/team/TeamPage';
 
 function App() {
   return (
@@ -29,12 +31,14 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectDetailsPage />} />
-            {/* Future routes like /tasks will go here */}
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/team" element={<TeamPage />} />
           </Route>
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;
