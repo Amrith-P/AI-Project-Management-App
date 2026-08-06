@@ -56,6 +56,21 @@ export const updateTaskDetail = createAsyncThunk(
   }
 );
 
+export const deleteTask = createAsyncThunk(
+  'tasks/deleteTask',
+  async (taskId: number, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/${taskId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return taskId;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete task');
+    }
+  }
+);
+
 export const updateTaskPositions = createAsyncThunk(
   'tasks/updateTaskPositions',
   async ({ projectId, tasks }: { projectId: string; tasks: { id: number; status: TaskStatus; position: number }[] }, { rejectWithValue }) => {
@@ -115,6 +130,9 @@ const taskSlice = createSlice({
         if (index !== -1) {
           state.tasks[index] = action.payload;
         }
+      })
+      .addCase(deleteTask.fulfilled, (state, action: PayloadAction<number>) => {
+        state.tasks = state.tasks.filter(t => t.id !== action.payload);
       });
   },
 });

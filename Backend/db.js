@@ -45,11 +45,35 @@ export const getDb = async () => {
         description TEXT,
         status TEXT DEFAULT 'Todo',
         position INTEGER DEFAULT 0,
+        priority TEXT DEFAULT 'Medium',
+        labels TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
       );
+      CREATE TABLE IF NOT EXISTS team_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ownerId INTEGER NOT NULL,
+        email TEXT NOT NULL,
+        userId INTEGER,
+        role TEXT DEFAULT 'Member',
+        status TEXT DEFAULT 'Pending',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ownerId) REFERENCES users (id),
+        FOREIGN KEY (userId) REFERENCES users (id),
+        UNIQUE(ownerId, email)
+      );
     `);
+    
+    // Auto-migrate existing tasks table
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT "Medium"');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN labels TEXT');
+    } catch (e) { /* Column might already exist */ }
+
     console.log('SQLite Database initialized');
   }
   return db;

@@ -12,6 +12,7 @@ const taskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   description: z.string().max(500, 'Description is too long').optional(),
   status: z.enum(['Todo', 'Doing', 'Testing', 'Done']),
+  priority: z.enum(['Low', 'Medium', 'High']).optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -36,6 +37,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     defaultValues: {
       status: initialStatus,
       description: '',
+      priority: 'Medium',
     },
   });
 
@@ -105,6 +107,20 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               <option value="Doing">Doing</option>
               <option value="Testing">Testing</option>
               <option value="Done">Done</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Priority
+            </label>
+            <select
+              {...register('priority')}
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </div>
 

@@ -18,7 +18,12 @@ router.get('/', verifyToken, async (req, res) => {
       ORDER BY tasks.updatedAt DESC
     `, [req.user.id]);
     
-    res.json(tasks);
+    const parsedTasks = tasks.map(t => ({
+      ...t,
+      labels: t.labels ? JSON.parse(t.labels) : []
+    }));
+    
+    res.json(parsedTasks);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -36,7 +41,14 @@ router.get('/:projectId', verifyToken, async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
     const tasks = await db.all('SELECT * FROM tasks WHERE projectId = ? ORDER BY position ASC', [req.params.projectId]);
-    res.json(tasks);
+    
+    // Parse labels back to array
+    const parsedTasks = tasks.map(t => ({
+      ...t,
+      labels: t.labels ? JSON.parse(t.labels) : []
+    }));
+    
+    res.json(parsedTasks);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -46,7 +58,7 @@ router.get('/:projectId', verifyToken, async (req, res) => {
 // POST new task
 router.post('/:projectId', verifyToken, async (req, res) => {
   try {
-    const { title, description, status } = req.body;
+    const { title, description, status, priority, labels } = req.body;
     const db = await getDb();
     
     // Check if user has access to the project
@@ -56,13 +68,15 @@ router.post('/:projectId', verifyToken, async (req, res) => {
     // Get max position for the new task
     const currentMax = await db.get('SELECT MAX(position) as maxPos FROM tasks WHERE projectId = ? AND status = ?', [req.params.projectId, status || 'Todo']);
     const newPosition = (currentMax.maxPos || 0) + 1;
+    const labelsStr = labels ? JSON.stringify(labels) : null;
 
     const result = await db.run(`
-      INSERT INTO tasks (projectId, title, description, status, position)
-      VALUES (?, ?, ?, ?, ?)
-    `, [req.params.projectId, title, description, status || 'Todo', newPosition]);
+      INSERT INTO tasks (projectId, title, description, status, position, priority, labels)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [req.params.projectId, title, description, status || 'Todo', newPosition, priority || 'Medium', labelsStr]);
     
     const newTask = await db.get('SELECT * FROM tasks WHERE id = ?', [result.lastID]);
+    if (newTask.labels) newTask.labels = JSON.parse(newTask.labels);
     res.status(201).json(newTask);
   } catch (error) {
     console.error(error);
@@ -73,7 +87,7 @@ router.post('/:projectId', verifyToken, async (req, res) => {
 // PUT update task details
 router.put('/detail/:taskId', verifyToken, async (req, res) => {
   try {
-    const { title, description, status } = req.body;
+    const { title, description, status, priority, labels } = req.body;
     const db = await getDb();
     
     // Get task and verify project ownership
@@ -85,13 +99,23 @@ router.put('/detail/:taskId', verifyToken, async (req, res) => {
     
     if (!task) return res.status(404).json({ message: 'Task not found' });
 
+    const labelsStr = labels ? JSON.stringify(labels) : task.labels;
+
     await db.run(`
       UPDATE tasks 
-      SET title = ?, description = ?, status = ?, updatedAt = CURRENT_TIMESTAMP
+      SET title = ?, description = ?, status = ?, priority = ?, labels = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
-    `, [title || task.title, description !== undefined ? description : task.description, status || task.status, req.params.taskId]);
+    `, [
+      title || task.title, 
+      description !== undefined ? description : task.description, 
+      status || task.status, 
+      priority || task.priority,
+      labelsStr,
+      req.params.taskId
+    ]);
     
     const updatedTask = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.taskId]);
+    if (updatedTask.labels) updatedTask.labels = JSON.parse(updatedTask.labels);
     res.json(updatedTask);
   } catch (error) {
     console.error(error);
@@ -125,6 +149,28 @@ router.put('/:projectId/positions', verifyToken, async (req, res) => {
       await db.run('ROLLBACK');
       throw txError;
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE a task
+router.delete('/:taskId', verifyToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    
+    // Verify project ownership
+    const task = await db.get(`
+      SELECT tasks.* FROM tasks 
+      JOIN projects ON tasks.projectId = projects.id 
+      WHERE tasks.id = ? AND projects.ownerId = ?
+    `, [req.params.taskId, req.user.id]);
+    
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    await db.run('DELETE FROM tasks WHERE id = ?', [req.params.taskId]);
+    res.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
