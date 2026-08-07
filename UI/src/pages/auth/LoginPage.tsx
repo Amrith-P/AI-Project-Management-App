@@ -35,22 +35,26 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div>
-      <h3 className="text-xl font-semibold text-gray-900 text-center mb-6">
-        Sign in to your account
+      <h3 className="text-4xl font-bold text-gray-900 mb-2 leading-tight">
+        Hello,<br />
+        Welcome
       </h3>
+      <p className="text-sm text-gray-500 mb-8">
+        Hey, welcome back to your special place
+      </p>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <Input
-          label="Email address"
+          label=""
           type="email"
-          placeholder="you@example.com"
+          placeholder="stanley@gmail.com"
           icon={Mail}
           error={errors.email?.message}
           {...register('email')}
         />
 
         <Input
-          label="Password"
+          label=""
           type="password"
           placeholder="••••••••"
           icon={Lock}
@@ -76,36 +80,26 @@ export const LoginPage: React.FC = () => {
               to="/forgot-password"
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
-              Forgot your password?
+              Forgot Password?
             </Link>
           </div>
         </div>
 
-        <Button type="submit" className="w-full" isLoading={isSubmitting}>
-          Sign in
+        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 py-6 text-base rounded-xl" isLoading={isSubmitting}>
+          Sign In
         </Button>
       </form>
 
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Don't have an account?
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <Link
-            to="/register"
-            className="w-full flex justify-center py-2 px-4 border border-indigo-600 rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Create new account
-          </Link>
-        </div>
+      <div className="mt-8 text-center text-sm">
+        <span className="text-gray-500">
+          Don't have an account?{' '}
+        </span>
+        <Link
+          to="/register"
+          className="font-medium text-indigo-600 hover:text-indigo-500"
+        >
+          Sign Up
+        </Link>
       </div>
     </div>
   );
