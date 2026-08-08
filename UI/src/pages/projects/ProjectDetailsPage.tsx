@@ -6,21 +6,21 @@ import type { RootState, AppDispatch } from '../../store';
 import { 
   ArrowLeft, 
   Calendar, 
-  Clock, 
   Flag, 
   Tag,
-  Users,
   Eye,
   FolderKanban,
-  CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 import { CreateProjectModal } from '../../components/projects/CreateProjectModal';
 import { Board } from '../../components/board/Board';
+import { AIAssistantModal } from '../../components/ai/AIAssistantModal';
+import { AIInsightsWidget } from '../../components/ai/AIInsightsWidget';
 
 export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'board'>('overview');
   const dispatch = useDispatch<AppDispatch>();
   const { currentProject, isLoading, error } = useSelector((state: RootState) => state.projects);
@@ -107,6 +107,13 @@ export const ProjectDetailsPage: React.FC = () => {
                 {currentProject.status}
               </span>
               <button 
+                onClick={() => setIsAiModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-sm text-sm font-medium hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:-translate-y-0.5"
+              >
+                <span className="mr-2">✨</span>
+                AI Task Breakdown
+              </button>
+              <button 
                 onClick={() => setIsEditModalOpen(true)}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
@@ -154,20 +161,8 @@ export const ProjectDetailsPage: React.FC = () => {
             </p>
           </div>
 
-          {/* AI Summary Placeholder */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-sm border border-indigo-100 p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-semibold text-indigo-900">AI Project Summary</h2>
-            </div>
-            <p className="text-indigo-800 text-sm leading-relaxed">
-              "This project is currently in the {currentProject.status.toLowerCase()} phase. Based on the {currentProject.priority.toLowerCase()} priority, team allocation is optimal. Consider reviewing upcoming milestones before the end date on {new Date(currentProject.endDate).toLocaleDateString()}."
-            </p>
-          </div>
+          {/* Real AI Summary & Insights Widget */}
+          <AIInsightsWidget projectId={Number(currentProject.id)} />
         </div>
 
         {/* Sidebar Info (Right Column) */}
@@ -258,6 +253,16 @@ export const ProjectDetailsPage: React.FC = () => {
           isOpen={isEditModalOpen} 
           onClose={() => setIsEditModalOpen(false)} 
           projectToEdit={currentProject}
+        />
+      )}
+
+      {isAiModalOpen && (
+        <AIAssistantModal
+          isOpen={isAiModalOpen}
+          onClose={() => setIsAiModalOpen(false)}
+          projectId={Number(currentProject.id)}
+          projectName={currentProject.name}
+          projectDescription={currentProject.description}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import type { Task, TaskPriority } from '../../types/task';
-import { Clock, Flag } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { TaskModal } from './TaskModal';
 
 interface TaskCardProps {
@@ -32,7 +32,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   return (
     <>
       <div
-        ref={dragRef}
+        ref={(node) => { dragRef(node); }}
         onClick={() => setIsModalOpen(true)}
         className={`bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-grab active:cursor-grabbing mb-3 transition-all hover:shadow-md hover:border-indigo-300 ${isDragging ? 'opacity-50' : 'opacity-100'}`}
       >

@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Loader2, Mail } from 'lucide-react';
+import { X, Mail } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../store';
 import { inviteMember } from '../../store/slices/teamSlice';

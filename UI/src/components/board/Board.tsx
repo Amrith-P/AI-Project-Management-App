@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Column } from './Column';
-import type { Task, TaskStatus } from '../../types/task';
+import type { TaskStatus } from '../../types/task';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { fetchTasks, optimisticUpdatePositions, updateTaskPositions } from '../../store/slices/taskSlice';

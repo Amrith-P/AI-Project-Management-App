@@ -14,7 +14,7 @@ interface ColumnProps {
 export const Column: React.FC<ColumnProps> = ({ status, tasks, onDropTask, onAddTask }) => {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'TASK',
-    drop: (item: any, monitor) => {
+    drop: (item: any) => {
       // Determine new index (simplistic approach: append to end)
       // A more robust approach calculates index based on drop position over specific cards.
       // For now, we append to the end of the list.
@@ -55,7 +55,7 @@ export const Column: React.FC<ColumnProps> = ({ status, tasks, onDropTask, onAdd
       </div>
 
       <div
-        ref={dropRef}
+        ref={(node) => { dropRef(node); }}
         className={`flex-1 min-h-[150px] p-2 rounded-xl transition-colors ${isOver ? 'bg-indigo-50/50 border-2 border-dashed border-indigo-200' : 'bg-gray-50/50'}`}
       >
         {tasks.map((task, index) => (
