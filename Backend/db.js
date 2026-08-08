@@ -64,6 +64,26 @@ export const getDb = async () => {
         FOREIGN KEY (userId) REFERENCES users (id),
         UNIQUE(ownerId, email)
       );
+
+      CREATE TABLE IF NOT EXISTS task_comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER NOT NULL,
+        userId INTEGER NOT NULL,
+        comment TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES users (id)
+      );
+
+      CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ownerId INTEGER NOT NULL,
+        projectId INTEGER,
+        action TEXT NOT NULL,
+        details TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ownerId) REFERENCES users (id)
+      );
     `);
     
     // Auto-migrate existing tasks table
@@ -72,6 +92,12 @@ export const getDb = async () => {
     } catch (e) { /* Column might already exist */ }
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN labels TEXT');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN dueDate DATETIME');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN assigneeId INTEGER');
     } catch (e) { /* Column might already exist */ }
 
     console.log('SQLite Database initialized');
