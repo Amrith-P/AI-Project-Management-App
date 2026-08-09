@@ -39,6 +39,8 @@ const initialState: AIState = {
   error: null,
 };
 
+import { API_BASE_URL } from '../../utils/config';
+
 // Async thunk: Generate AI Tasks Preview
 export const generateAITasks = createAsyncThunk(
   'ai/generateTasks',
@@ -50,7 +52,7 @@ export const generateAITasks = createAsyncThunk(
       const state = getState() as RootState;
       const token = state.auth.token;
 
-      const response = await fetch('/api/ai/generate-tasks', {
+      const response = await fetch(`${API_BASE_URL}/ai/generate-tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +81,7 @@ export const fetchAIProjectInsight = createAsyncThunk(
       const state = getState() as RootState;
       const token = state.auth.token;
 
-      const response = await fetch('/api/ai/project-summary', {
+      const response = await fetch(`${API_BASE_URL}/ai/project-summary`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

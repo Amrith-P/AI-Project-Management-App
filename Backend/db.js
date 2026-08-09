@@ -99,6 +99,15 @@ export const getDb = async () => {
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN assigneeId INTEGER');
     } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN checklist TEXT');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN estimatedHours REAL DEFAULT 0');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN spentHours REAL DEFAULT 0');
+    } catch (e) { /* Column might already exist */ }
 
     console.log('SQLite Database initialized');
   }

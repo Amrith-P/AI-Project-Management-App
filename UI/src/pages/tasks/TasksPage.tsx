@@ -16,6 +16,8 @@ interface Task {
   updatedAt: string;
 }
 
+import { API_BASE_URL } from '../../utils/config';
+
 export const TasksPage: React.FC = () => {
   const { token } = useSelector((state: RootState) => state.auth);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -26,7 +28,7 @@ export const TasksPage: React.FC = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/tasks', {
+        const response = await axios.get(`${API_BASE_URL}/tasks`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTasks(response.data);

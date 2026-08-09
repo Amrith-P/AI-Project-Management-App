@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../db.js';
 import { verifyToken } from '../middleware/auth.js';
+import { logActivity } from './activities.js';
 
 const router = express.Router();
 
@@ -54,6 +55,8 @@ router.post('/', verifyToken, async (req, res) => {
     const newProject = await db.get('SELECT * FROM projects WHERE id = ?', [result.lastID]);
     newProject.tags = newProject.tags ? JSON.parse(newProject.tags) : [];
     
+    await logActivity(req.user.id, newProject.id, 'Created Project', `Created new project "${newProject.name}"`);
+
     res.status(201).json(newProject);
   } catch (error) {
     console.error(error);
@@ -82,7 +85,27 @@ router.put('/:id', verifyToken, async (req, res) => {
     const updatedProject = await db.get('SELECT * FROM projects WHERE id = ?', [req.params.id]);
     updatedProject.tags = updatedProject.tags ? JSON.parse(updatedProject.tags) : [];
     
+    await logActivity(req.user.id, updatedProject.id, 'Updated Project', `Updated project details for "${updatedProject.name}"`);
+
     res.json(updatedProject);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE project
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [req.params.id, req.user.id]);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    await db.run('DELETE FROM projects WHERE id = ?', [req.params.id]);
+    
+    await logActivity(req.user.id, null, 'Deleted Project', `Deleted project "${project.name}"`);
+
+    res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

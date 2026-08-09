@@ -3,7 +3,9 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import type { TeamMember, TeamState, TeamRole } from '../../types/team';
 
-const API_URL = 'http://localhost:5000/api/team';
+import { API_BASE_URL } from '../../utils/config';
+
+const API_URL = `${API_BASE_URL}/team`;
 
 const initialState: TeamState = {
   members: [],
@@ -25,6 +27,8 @@ export const fetchTeam = createAsyncThunk(
     }
   }
 );
+
+export const fetchTeamMembers = fetchTeam;
 
 export const inviteMember = createAsyncThunk(
   'team/inviteMember',
@@ -49,7 +53,7 @@ export const updateMemberRole = createAsyncThunk(
       const response = await axios.put(`${API_URL}/${id}`, { role }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data; // { id, role }
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update role');
     }

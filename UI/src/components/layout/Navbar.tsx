@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, User, LogOut } from 'lucide-react';
+import { Search, Bell, Menu, User, LogOut, Sparkles } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onToggleAiCopilot?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
@@ -20,10 +24,8 @@ export const Navbar: React.FC = () => {
 
   const handleViewProfile = () => {
     setIsProfileOpen(false);
-    // navigate('/profile'); // To be implemented
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -52,13 +54,24 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
+        {/* AI Copilot Button */}
+        {onToggleAiCopilot && (
+          <button
+            onClick={onToggleAiCopilot}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-sm transition-all transform hover:-translate-y-0.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            AI Copilot
+          </button>
+        )}
+
         <button className="p-2 text-gray-400 hover:text-gray-500 relative">
-          <Bell className="h-6 w-6" />
+          <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
         </button>
 
-        <div className="relative flex items-center border-l border-gray-200 pl-4" ref={dropdownRef}>
+        <div className="relative flex items-center border-l border-gray-200 pl-3" ref={dropdownRef}>
           <button 
             className="flex items-center space-x-3 focus:outline-none"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -73,7 +86,6 @@ export const Navbar: React.FC = () => {
             />
           </button>
 
-          {/* Dropdown Menu */}
           {isProfileOpen && (
             <div className="origin-top-right absolute right-0 top-10 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
               <div className="px-4 py-2 border-b border-gray-100">

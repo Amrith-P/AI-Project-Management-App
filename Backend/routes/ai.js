@@ -90,7 +90,6 @@ Format: JSON array only, no markdown formatting around it.`;
       tasks = generateFallbackTasks(targetName, targetDesc, count);
     }
 
-    // If autoInsert is true and projectId is provided, batch insert into database
     if (autoInsert && projectId && tasks.length > 0) {
       const currentMax = await db.get('SELECT MAX(position) as maxPos FROM tasks WHERE projectId = ? AND status = ?', [projectId, 'Todo']);
       let startPos = (currentMax?.maxPos || 0) + 1;
@@ -139,9 +138,9 @@ router.post('/project-summary', verifyToken, async (req, res) => {
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === 'Done').length;
-    const inProgressTasks = tasks.filter(t => t.status === 'In Progress').length;
+    const inProgressTasks = tasks.filter(t => t.status === 'Doing' || t.status === 'In Progress').length;
     const todoTasks = tasks.filter(t => t.status === 'Todo').length;
-    const highPriorityCount = tasks.filter(t => t.priority === 'High').length;
+    const highPriorityCount = tasks.filter(t => t.priority === 'High' || t.priority === 'Critical').length;
 
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
@@ -227,6 +226,153 @@ Return ONLY valid JSON format without markdown ticks.`;
   } catch (error) {
     console.error('Error in project-summary:', error);
     res.status(500).json({ message: 'Failed to generate project summary', error: error.message });
+  }
+});
+
+// POST /api/ai/chat (Interactive AI Copilot Drawer endpoint)
+router.post('/chat', verifyToken, async (req, res) => {
+  try {
+    const { message, projectId } = req.body;
+    if (!message) return res.status(400).json({ message: 'Message is required' });
+
+    const db = await getDb();
+    let project = null;
+    let tasks = [];
+
+    if (projectId) {
+      project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+      if (project) {
+        tasks = await db.all('SELECT title, status, priority, dueDate FROM tasks WHERE projectId = ?', [projectId]);
+      }
+    } else {
+      tasks = await db.all(`
+        SELECT t.title, t.status, t.priority, p.name as projectName 
+        FROM tasks t 
+        JOIN projects p ON t.projectId = p.id 
+        WHERE p.ownerId = ? 
+        LIMIT 20
+      `, [req.user.id]);
+    }
+
+    const aiClient = getAiClient();
+    let replyText = '';
+    let actionCards = [];
+
+    if (aiClient) {
+      try {
+        const prompt = `You are AI Copilot, a helpful AI Project Manager assistant.
+Context:
+${project ? `Active Project: ${project.name} (${project.status}, Progress: ${project.progress}%)` : 'Workspace Overview'}
+Current Tasks: ${JSON.stringify(tasks.slice(0, 15))}
+
+User Question: "${message}"
+
+Answer concisely and clearly. If the user asks to generate tasks, suggest release notes, or re-prioritize, provide helpful recommendations. Return response as a JSON object with:
+- "replyText": markdown formatted answer string
+- "suggestedAction": optional object with key "type" ("generate_tasks" | "release_notes" | "summary") and optional payload.
+
+Return ONLY valid JSON format.`;
+
+        const response = await aiClient.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt
+        });
+
+        const textResponse = response.text || '';
+        const cleanedJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanedJson);
+        replyText = parsed.replyText || textResponse;
+        if (parsed.suggestedAction) {
+          actionCards.push(parsed.suggestedAction);
+        }
+      } catch (err) {
+        console.warn('Gemini chat failed, using fallback copilot:', err.message);
+      }
+    }
+
+    if (!replyText) {
+      const msgLower = message.toLowerCase();
+      if (msgLower.includes('risk') || msgLower.includes('bottleneck')) {
+        replyText = `Based on your task backlog, high-priority unassigned tasks represent your primary risk factor. Make sure tasks are assigned to team members and due dates are specified.`;
+      } else if (msgLower.includes('release') || msgLower.includes('note')) {
+        const doneTasks = tasks.filter(t => t.status === 'Done');
+        replyText = `### Release Notes Draft\n\n**Completed Highlights (${doneTasks.length} items)**:\n` +
+          (doneTasks.length > 0 ? doneTasks.map(t => `- ✅ ${t.title}`).join('\n') : '- Finalized core architecture and setup.');
+      } else if (msgLower.includes('task') || msgLower.includes('add') || msgLower.includes('generate')) {
+        replyText = `I can help create additional tasks for your project. Click below to generate recommended QA & Integration tasks!`;
+        actionCards.push({
+          type: 'generate_tasks',
+          title: 'Generate Recommended QA & Testing Tasks'
+        });
+      } else {
+        replyText = `I am your project AI Copilot. You can ask me to summarize project health, identify overdue tasks, generate release notes, or recommend subtasks!`;
+      }
+    }
+
+    res.json({
+      replyText,
+      actionCards
+    });
+  } catch (error) {
+    console.error('Error in AI chat:', error);
+    res.status(500).json({ message: 'Failed to process AI chat request' });
+  }
+});
+
+// POST /api/ai/smart-prioritize (AI Auto-Reordering)
+router.post('/smart-prioritize', verifyToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    if (!projectId) return res.status(400).json({ message: 'projectId is required' });
+
+    const db = await getDb();
+    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    const tasks = await db.all('SELECT * FROM tasks WHERE projectId = ?', [projectId]);
+
+    // Priority rank logic
+    const priorityWeight = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+    
+    // Sort tasks by priority descending, then dueDate ascending
+    tasks.sort((a, b) => {
+      const weightA = priorityWeight[a.priority] || 2;
+      const weightB = priorityWeight[b.priority] || 2;
+      if (weightB !== weightA) return weightB - weightA;
+
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      return 0;
+    });
+
+    // Update positions in DB
+    await db.run('BEGIN TRANSACTION');
+    try {
+      let pos = 1;
+      for (const t of tasks) {
+        await db.run('UPDATE tasks SET position = ? WHERE id = ?', [pos++, t.id]);
+      }
+      await db.run('COMMIT');
+    } catch (err) {
+      await db.run('ROLLBACK');
+      throw err;
+    }
+
+    const reorderedTasks = await db.all('SELECT * FROM tasks WHERE projectId = ? ORDER BY position ASC', [projectId]);
+    const parsed = reorderedTasks.map(t => ({
+      ...t,
+      labels: t.labels ? JSON.parse(t.labels) : [],
+      checklist: t.checklist ? JSON.parse(t.checklist) : []
+    }));
+
+    res.json({
+      message: 'Tasks successfully prioritized by urgency & priority',
+      tasks: parsed
+    });
+  } catch (error) {
+    console.error('Error prioritizing tasks:', error);
+    res.status(500).json({ message: 'Failed to prioritize tasks' });
   }
 });
 

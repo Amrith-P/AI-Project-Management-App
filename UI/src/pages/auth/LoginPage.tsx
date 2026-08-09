@@ -11,6 +11,8 @@ import type { LoginFormData } from '../../utils/validation/auth.schema';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
+import { API_BASE_URL } from '../../utils/config';
+
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -24,7 +26,7 @@ export const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', data);
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
       dispatch(setCredentials({ user: response.data.user, token: response.data.token }));
       navigate('/dashboard');
     } catch (error: any) {
