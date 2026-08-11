@@ -16,6 +16,7 @@ import { CreateProjectModal } from '../../components/projects/CreateProjectModal
 import { Board } from '../../components/board/Board';
 import { AIAssistantModal } from '../../components/ai/AIAssistantModal';
 import { AIInsightsWidget } from '../../components/ai/AIInsightsWidget';
+import { AIRiskPredictorWidget } from '../../components/ai/AIRiskPredictorWidget';
 
 export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -154,6 +155,8 @@ export const ProjectDetailsPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content (Left Column) */}
         <div className="lg:col-span-2 space-y-6">
+          <AIRiskPredictorWidget projectId={currentProject.id} />
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">About this project</h2>
             <p className="text-gray-600 whitespace-pre-wrap leading-relaxed">

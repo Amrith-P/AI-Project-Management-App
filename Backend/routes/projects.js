@@ -39,6 +39,75 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
+// GET analytics for a specific project or all user projects
+router.get('/:id/analytics', verifyToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    const projectId = req.params.id;
+
+    let tasks = [];
+    if (projectId === 'all') {
+      tasks = await db.all(`
+        SELECT tasks.*, tm.email as assigneeEmail, u.full_name as assigneeName
+        FROM tasks
+        JOIN projects ON tasks.projectId = projects.id
+        LEFT JOIN team_members tm ON tasks.assigneeId = tm.id
+        LEFT JOIN users u ON tm.userId = u.id OR tm.email = u.email
+        WHERE projects.ownerId = ?
+      `, [req.user.id]);
+    } else {
+      const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+      if (!project) return res.status(404).json({ message: 'Project not found' });
+
+      tasks = await db.all(`
+        SELECT tasks.*, tm.email as assigneeEmail, u.full_name as assigneeName
+        FROM tasks
+        LEFT JOIN team_members tm ON tasks.assigneeId = tm.id
+        LEFT JOIN users u ON tm.userId = u.id OR tm.email = u.email
+        WHERE tasks.projectId = ?
+      `, [projectId]);
+    }
+
+    const totalTasks = tasks.length;
+    const statusCounts = { Todo: 0, Doing: 0, Testing: 0, Done: 0 };
+    const priorityCounts = { High: 0, Medium: 0, Low: 0 };
+    let totalEstimated = 0;
+    let totalSpent = 0;
+    const assigneeMap = {};
+
+    tasks.forEach(t => {
+      if (statusCounts[t.status] !== undefined) statusCounts[t.status]++;
+      if (priorityCounts[t.priority] !== undefined) priorityCounts[t.priority]++;
+      totalEstimated += t.estimatedHours || 0;
+      totalSpent += t.spentHours || 0;
+
+      const assigneeKey = t.assigneeName || t.assigneeEmail || 'Unassigned';
+      if (!assigneeMap[assigneeKey]) {
+        assigneeMap[assigneeKey] = { name: assigneeKey, total: 0, completed: 0, spentHours: 0 };
+      }
+      assigneeMap[assigneeKey].total++;
+      if (t.status === 'Done') assigneeMap[assigneeKey].completed++;
+      assigneeMap[assigneeKey].spentHours += t.spentHours || 0;
+    });
+
+    const completionRate = totalTasks > 0 ? Math.round((statusCounts.Done / totalTasks) * 100) : 0;
+    const assigneeWorkload = Object.values(assigneeMap);
+
+    res.json({
+      totalTasks,
+      statusCounts,
+      priorityCounts,
+      completionRate,
+      totalEstimated,
+      totalSpent,
+      assigneeWorkload
+    });
+  } catch (error) {
+    console.error('Analytics fetch error:', error);
+    res.status(500).json({ message: 'Server error fetching analytics' });
+  }
+});
+
 // POST new project
 router.post('/', verifyToken, async (req, res) => {
   try {

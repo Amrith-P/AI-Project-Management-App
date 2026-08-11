@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb } from '../db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { logActivity } from './activities.js';
+import { createNotification } from './notifications.js';
 
 const router = express.Router();
 
@@ -49,22 +50,47 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// GET all tasks for a project
+// GET all tasks for a project with search and multi-filtering support
 router.get('/:projectId', verifyToken, async (req, res) => {
   try {
     const db = await getDb();
+    const { search, priority, assigneeId, label } = req.query;
     
     const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [req.params.projectId, req.user.id]);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
-    const tasks = await db.all(`
+    let sql = `
       SELECT tasks.*, tm.email as assigneeEmail, u.full_name as assigneeName
       FROM tasks
       LEFT JOIN team_members tm ON tasks.assigneeId = tm.id
       LEFT JOIN users u ON tm.userId = u.id OR tm.email = u.email
-      WHERE tasks.projectId = ? 
-      ORDER BY tasks.position ASC
-    `, [req.params.projectId]);
+      WHERE tasks.projectId = ?
+    `;
+    const params = [req.params.projectId];
+
+    if (search && search.trim()) {
+      sql += ` AND (tasks.title LIKE ? OR tasks.description LIKE ?)`;
+      params.push(`%${search.trim()}%`, `%${search.trim()}%`);
+    }
+
+    if (priority && priority !== 'All') {
+      sql += ` AND tasks.priority = ?`;
+      params.push(priority);
+    }
+
+    if (assigneeId && assigneeId !== 'All') {
+      sql += ` AND tasks.assigneeId = ?`;
+      params.push(assigneeId);
+    }
+
+    if (label && label !== 'All') {
+      sql += ` AND tasks.labels LIKE ?`;
+      params.push(`%${label}%`);
+    }
+
+    sql += ` ORDER BY tasks.position ASC`;
+
+    const tasks = await db.all(sql, params);
     
     const parsedTasks = tasks.map(t => ({
       ...t,

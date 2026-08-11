@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
+import { AIRiskPredictorWidget } from '../../components/ai/AIRiskPredictorWidget';
 
 const taskCompletionTrendData = [
   { name: 'Mon', completed: 4, added: 6 },
@@ -65,6 +66,9 @@ export const DashboardPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Global AI Risk Predictor */}
+      <AIRiskPredictorWidget projectId="all" />
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

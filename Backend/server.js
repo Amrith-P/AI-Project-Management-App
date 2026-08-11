@@ -7,6 +7,7 @@ import tasksRoutes from './routes/tasks.js';
 import teamRoutes from './routes/team.js';
 import aiRoutes from './routes/ai.js';
 import activitiesRoutes from './routes/activities.js';
+import notificationsRoutes from './routes/notifications.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/tasks', tasksRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/activities', activitiesRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

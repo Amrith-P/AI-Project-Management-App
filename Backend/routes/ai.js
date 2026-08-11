@@ -376,4 +376,127 @@ router.post('/smart-prioritize', verifyToken, async (req, res) => {
   }
 });
 
+// POST /api/ai/risk-analysis (Deep risk evaluation endpoint)
+router.post('/risk-analysis', verifyToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const db = await getDb();
+
+    let project = null;
+    let tasks = [];
+    if (projectId && projectId !== 'all') {
+      project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+      if (project) {
+        tasks = await db.all('SELECT * FROM tasks WHERE projectId = ?', [projectId]);
+      }
+    } else {
+      tasks = await db.all(`
+        SELECT tasks.* FROM tasks 
+        JOIN projects ON tasks.projectId = projects.id 
+        WHERE projects.ownerId = ?
+      `, [req.user.id]);
+    }
+
+    const now = new Date();
+    const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < now && t.status !== 'Done');
+    const unassignedHighPriority = tasks.filter(t => !t.assigneeId && (t.priority === 'High' || t.priority === 'Critical') && t.status !== 'Done');
+    const blockedCount = tasks.filter(t => t.status === 'Testing' || t.status === 'Doing').length;
+
+    let riskScore = 15; // default low risk
+    const warningItems = [];
+    const recommendedFixes = [];
+
+    if (overdueTasks.length > 0) {
+      riskScore += overdueTasks.length * 20;
+      warningItems.push(`${overdueTasks.length} task(s) are past due date.`);
+      recommendedFixes.push('Reschedule or reassign overdue tasks.');
+    }
+
+    if (unassignedHighPriority.length > 0) {
+      riskScore += unassignedHighPriority.length * 15;
+      warningItems.push(`${unassignedHighPriority.length} high priority task(s) have no assignee.`);
+      recommendedFixes.push('Assign team members to unassigned high priority tasks.');
+    }
+
+    if (tasks.length === 0) {
+      riskScore = 30;
+      warningItems.push('Project has no tasks created yet.');
+      recommendedFixes.push('Use AI Task Generation to outline initial tasks.');
+    }
+
+    riskScore = Math.min(Math.max(riskScore, 5), 100);
+    const riskLevel = riskScore > 65 ? 'Critical' : riskScore > 40 ? 'High' : riskScore > 20 ? 'Medium' : 'Low';
+
+    const aiClient = getAiClient();
+    let aiInsights = null;
+
+    if (aiClient && tasks.length > 0) {
+      try {
+        const prompt = `Perform a risk assessment on this project backlog:
+Project: ${project ? project.name : 'All Projects'}
+Total Tasks: ${tasks.length}, Overdue: ${overdueTasks.length}, Unassigned Critical: ${unassignedHighPriority.length}
+
+Return a JSON object:
+- "riskScore": number 0-100
+- "riskLevel": "Low" | "Medium" | "High" | "Critical"
+- "summary": string (1-2 sentences)
+- "warningItems": array of strings
+- "recommendedFixes": array of strings
+
+Return ONLY valid JSON format.`;
+
+        const response = await aiClient.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt
+        });
+
+        const cleanedJson = (response.text || '').replace(/```json/g, '').replace(/```/g, '').trim();
+        aiInsights = JSON.parse(cleanedJson);
+      } catch (err) {
+        console.warn('Gemini risk analysis failed, returning rule-based analysis:', err.message);
+      }
+    }
+
+    res.json(aiInsights || {
+      riskScore,
+      riskLevel,
+      summary: `Risk evaluation completed. Project health score is ${100 - riskScore}/100.`,
+      warningItems,
+      recommendedFixes
+    });
+  } catch (error) {
+    console.error('Error in risk-analysis:', error);
+    res.status(500).json({ message: 'Failed to perform risk analysis' });
+  }
+});
+
+// POST /api/ai/milestone-summary (AI Sprint / Executive update report)
+router.post('/milestone-summary', verifyToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const db = await getDb();
+
+    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    const tasks = await db.all('SELECT * FROM tasks WHERE projectId = ?', [projectId]);
+    const completedTasks = tasks.filter(t => t.status === 'Done');
+
+    const summaryReport = `### Executive Summary: ${project.name}
+**Status**: ${project.status} | **Progress**: ${project.progress}%
+
+#### Completed Milestones (${completedTasks.length}/${tasks.length}):
+${completedTasks.length > 0 ? completedTasks.map(t => `- ✅ **${t.title}**`).join('\n') : '- Initial project kickoff completed.'}
+
+#### Next Focus Items:
+${tasks.filter(t => t.status === 'Doing' || t.status === 'Todo').slice(0, 3).map(t => `- ⏳ **${t.title}** (${t.priority} Priority)`).join('\n')}
+`;
+
+    res.json({ summaryReport });
+  } catch (error) {
+    console.error('Error in milestone-summary:', error);
+    res.status(500).json({ message: 'Failed to generate milestone summary' });
+  }
+});
+
 export default router;

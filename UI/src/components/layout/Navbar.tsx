@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, User, LogOut, Sparkles } from 'lucide-react';
+import { Search, Menu, User, LogOut, Sparkles, BarChart3, Sun, Moon } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
+import { NotificationDropdown } from './NotificationDropdown';
+import { useTheme } from '../../context/ThemeContext';
 
 interface NavbarProps {
   onToggleAiCopilot?: () => void;
@@ -13,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
+  const { theme, toggleTheme } = useTheme();
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,6 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
 
   const handleViewProfile = () => {
     setIsProfileOpen(false);
+    navigate('/settings');
   };
 
   useEffect(() => {
@@ -55,6 +59,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
       </div>
 
       <div className="flex items-center space-x-3">
+        {/* Quick Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+        >
+          {theme === 'light' ? <Moon className="h-5 w-5 text-indigo-600" /> : <Sun className="h-5 w-5 text-amber-400" />}
+        </button>
+
+        {/* Analytics Shortcut */}
+        <button
+          onClick={() => navigate('/analytics')}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+        >
+          <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
+          Analytics
+        </button>
+
         {/* AI Copilot Button */}
         {onToggleAiCopilot && (
           <button
@@ -66,10 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
           </button>
         )}
 
-        <button className="p-2 text-gray-400 hover:text-gray-500 relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-        </button>
+        <NotificationDropdown />
 
         <div className="relative flex items-center border-l border-gray-200 pl-3" ref={dropdownRef}>
           <button 

@@ -101,3 +101,22 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
   - Run TypeScript build check (`npm run build` in `UI/`).
   - Run backend API check.
   - Perform full end-to-end verification across all user flows.
+
+---
+
+### Phase 3: AI Risk Predictor, Enterprise Analytics Dashboard, Notifications Engine & Global Search (COMPLETED)
+
+#### Phase 3A: AI Risk Predictor & Health Scanner
+- **Backend**: `POST /api/ai/risk-analysis`, `POST /api/ai/milestone-summary` in `Backend/routes/ai.js`.
+- **Frontend**: `AIRiskPredictorWidget.tsx` integrated in `DashboardPage.tsx` and `ProjectDetailsPage.tsx`.
+
+#### Phase 3B: Enterprise Analytics & Reporting Dashboard
+- **Backend**: `GET /api/projects/:id/analytics` in `Backend/routes/projects.js`.
+- **Frontend**: `AnalyticsPage.tsx` with velocity charts, priority distribution, workload capacity table, and 1-click CSV export. Added `/analytics` route to `App.tsx`, `Navbar.tsx`, and `Sidebar.tsx`.
+
+#### Phase 3C: Real-Time In-App Notifications Engine
+- **Database & Backend**: `notifications` table, `Backend/routes/notifications.js`, and `createNotification()` triggers on task assignments & comments.
+- **Frontend**: `NotificationDropdown.tsx` in `Navbar.tsx` with unread badge counter, notification drawer, and Redux thunks (`notificationSlice.ts`).
+
+#### Phase 3D: Global Search & Kanban Multi-Filter System
+- **Backend & Frontend**: Search query, priority, assignee, and tag/label filters in `GET /api/projects/:projectId/tasks` and `BoardFilterBar.tsx` integrated into `Board.tsx`.
