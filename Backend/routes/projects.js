@@ -13,14 +13,21 @@ router.get('/', verifyToken, async (req, res) => {
     const projects = await db.all(`
       SELECT DISTINCT p.* 
       FROM projects p
-      LEFT JOIN team_members tm ON tm.ownerId = p.ownerId AND (tm.userId = ? OR tm.email = ?)
-      LEFT JOIN tasks t ON t.projectId = p.id AND (t.assigneeId = tm.id OR tm.userId = ? OR tm.email = ?)
       WHERE p.ownerId = ? 
-         OR tm.id IS NOT NULL 
-         OR t.id IS NOT NULL 
          OR p.visibility = 'Public'
+         OR EXISTS (
+           SELECT 1 FROM team_members tm 
+           WHERE tm.ownerId = p.ownerId 
+             AND (tm.userId = ? OR tm.email = ?)
+         )
+         OR EXISTS (
+           SELECT 1 FROM tasks t 
+           JOIN team_members tm ON t.assigneeId = tm.id 
+           WHERE t.projectId = p.id 
+             AND (tm.userId = ? OR tm.email = ?)
+         )
       ORDER BY p.createdAt DESC
-    `, [req.user.id, req.user.email, req.user.id, req.user.email, req.user.id]);
+    `, [req.user.id, req.user.id, req.user.email, req.user.id, req.user.email]);
     
     const formattedProjects = projects.map(p => ({
       ...p,
