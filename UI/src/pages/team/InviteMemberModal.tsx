@@ -11,7 +11,7 @@ import { Button } from '../../components/ui/Button';
 
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
-  role: z.enum(['Admin', 'Member']),
+  role: z.enum(['Project Manager', 'Tech Lead', 'Developer', 'Designer', 'QA Engineer', 'Admin', 'Member']),
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
@@ -32,7 +32,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
   } = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
     defaultValues: {
-      role: 'Member',
+      role: 'Developer',
     },
   });
 
@@ -51,14 +51,14 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div 
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-up"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-up border border-gray-100 dark:border-gray-800"
         onClick={e => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Invite Team Member</h2>
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Invite Team Member</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -66,7 +66,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email Address <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -75,7 +75,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
               </div>
               <input
                 {...register('email')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 transition-colors"
                 placeholder="colleague@example.com"
               />
             </div>
@@ -83,19 +83,24 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Role
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Assigned Role
             </label>
             <select
               {...register('role')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
-              <option value="Member">Member</option>
+              <option value="Project Manager">Project Manager</option>
+              <option value="Tech Lead">Tech Lead</option>
+              <option value="Developer">Developer</option>
+              <option value="Designer">Designer</option>
+              <option value="QA Engineer">QA Engineer</option>
               <option value="Admin">Admin</option>
+              <option value="Member">Member</option>
             </select>
           </div>
 
-          <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800">
             <Button
               type="button"
               variant="outline"

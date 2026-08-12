@@ -96,9 +96,48 @@ export const getDb = async () => {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users (id)
       );
+
+      CREATE TABLE IF NOT EXISTS automations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        triggerEvent TEXT NOT NULL,
+        actionType TEXT NOT NULL,
+        config TEXT,
+        isActive INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS task_attachments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER NOT NULL,
+        userId INTEGER NOT NULL,
+        fileName TEXT NOT NULL,
+        fileSize INTEGER DEFAULT 0,
+        fileType TEXT,
+        fileUrl TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES users (id)
+      );
+
+      CREATE TABLE IF NOT EXISTS sprints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        startDate DATETIME,
+        endDate DATETIME,
+        status TEXT DEFAULT 'Planning',
+        goal TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
     `);
     
-    // Auto-migrate existing tasks table
+    // Auto-migrate existing tables
+    try {
+      await db.exec('ALTER TABLE users ADD COLUMN role TEXT DEFAULT "Project Manager"');
+    } catch (e) { /* Column might already exist */ }
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT "Medium"');
     } catch (e) { /* Column might already exist */ }
@@ -119,6 +158,9 @@ export const getDb = async () => {
     } catch (e) { /* Column might already exist */ }
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN spentHours REAL DEFAULT 0');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN sprintId INTEGER');
     } catch (e) { /* Column might already exist */ }
 
     console.log('SQLite Database initialized');

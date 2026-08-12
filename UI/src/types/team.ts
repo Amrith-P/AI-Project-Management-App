@@ -1,4 +1,4 @@
-export type TeamRole = 'Admin' | 'Member';
+export type TeamRole = 'Project Manager' | 'Tech Lead' | 'Developer' | 'Designer' | 'QA Engineer' | 'Admin' | 'Member';
 export type TeamStatus = 'Pending' | 'Active';
 
 export interface TeamMember {

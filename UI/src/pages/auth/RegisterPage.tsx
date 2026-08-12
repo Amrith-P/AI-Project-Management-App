@@ -60,6 +60,22 @@ export const RegisterPage: React.FC = () => {
           {...register('email')}
         />
 
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+            Select Your Role
+          </label>
+          <select
+            {...register('role')}
+            className="w-full text-xs p-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+          >
+            <option value="Project Manager">Project Manager (Full Workspace Access)</option>
+            <option value="Tech Lead">Tech Lead (Assigned Projects & Backlogs)</option>
+            <option value="Developer">Developer (Assigned Tasks & Sprint Kanban)</option>
+            <option value="Designer">Designer (Assigned UI Tasks & Assets)</option>
+            <option value="QA Engineer">QA Engineer (Testing Tasks & Checklist QA)</option>
+          </select>
+        </div>
+
         <Input
           label="Password"
           type="password"

@@ -11,7 +11,11 @@ import {
   CheckSquare, 
   Plus, 
   MessageSquare, 
-  Send
+  Send,
+  Paperclip,
+  FileText,
+  Upload,
+  Download
 } from 'lucide-react';
 
 interface TaskDetailModalProps {
@@ -36,7 +40,9 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
   const [checklist, setChecklist] = useState<CheckItem[]>(task.checklist || []);
   const [newCheckItem, setNewCheckItem] = useState('');
   const [newComment, setNewComment] = useState('');
-  const [activeTab, setActiveTab] = useState<'details' | 'comments'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'attachments'>('details');
+  const [attachments, setAttachments] = useState<any[]>([]);
+  const [newFileName, setNewFileName] = useState('');
 
   useEffect(() => {
     if (isOpen && task.id) {
@@ -174,6 +180,17 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
           >
             <MessageSquare className="w-4 h-4" />
             Discussion ({activeTaskComments.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('attachments')}
+            className={`py-3.5 px-1 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'attachments'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Paperclip className="w-4 h-4" />
+            Attachments ({attachments.length})
           </button>
         </div>
 
@@ -375,18 +392,15 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
               </div>
 
             </div>
-          ) : (
-            /* Discussion & Comments Tab */
+          ) : activeTab === 'comments' ? (
             <div className="space-y-6">
-              
-              {/* Comment Input */}
               <form onSubmit={handleAddComment} className="flex gap-3">
                 <input
                   type="text"
                   placeholder="Write a comment or project update..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  className="flex-1 rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
                 <button
                   type="submit"
@@ -398,28 +412,27 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
                 </button>
               </form>
 
-              {/* Comments Feed */}
               {isCommentsLoading ? (
                 <div className="py-8 text-center text-gray-400">Loading comments...</div>
               ) : activeTaskComments.length === 0 ? (
-                <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                  <MessageSquare className="w-8 h-8 mx-auto text-gray-300 mb-2" />
+                <div className="text-center py-10 text-gray-400 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                  <MessageSquare className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
                   <p className="text-sm font-medium">No comments posted yet.</p>
                   <p className="text-xs text-gray-400 mt-0.5">Start the discussion above!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {activeTaskComments.map((c) => (
-                    <div key={c.id} className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex gap-3">
+                    <div key={c.id} className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4 border border-gray-100 dark:border-gray-700 flex gap-3">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
                         {(c.userName || c.userEmail || 'U').slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-semibold text-gray-900">{c.userName || c.userEmail}</span>
+                          <span className="text-xs font-semibold text-gray-900 dark:text-white">{c.userName || c.userEmail}</span>
                           <span className="text-xs text-gray-400">{new Date(c.createdAt).toLocaleString()}</span>
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{c.comment}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{c.comment}</p>
                       </div>
                       <button
                         onClick={() => handleDeleteComment(c.id)}
@@ -431,7 +444,79 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
                   ))}
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center text-center space-y-2">
+                <Upload className="w-8 h-8 text-indigo-500 opacity-60" />
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Attach Document or Media Asset</p>
+                <div className="flex gap-2 w-full max-w-md pt-1">
+                  <input
+                    type="text"
+                    placeholder="Enter file name (e.g. DesignSpec.pdf)..."
+                    value={newFileName}
+                    onChange={(e) => setNewFileName(e.target.value)}
+                    className="flex-1 rounded-xl border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newFileName.trim()) return;
+                      const fileObj = {
+                        id: Date.now(),
+                        fileName: newFileName.trim(),
+                        fileSize: Math.floor(Math.random() * 5000 + 500) * 1024,
+                        fileType: 'application/pdf',
+                        createdAt: new Date().toISOString()
+                      };
+                      setAttachments([fileObj, ...attachments]);
+                      setNewFileName('');
+                    }}
+                    className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Attach
+                  </button>
+                </div>
+              </div>
 
+              {attachments.length === 0 ? (
+                <div className="py-8 text-center text-gray-400">
+                  <Paperclip className="w-8 h-8 mx-auto mb-2 opacity-30 text-indigo-400" />
+                  <p className="text-sm font-medium">No file attachments added yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {attachments.map((att) => (
+                    <div key={att.id} className="p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-2xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 rounded-lg flex-shrink-0">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{att.fileName}</p>
+                          <span className="text-[10px] text-gray-400">{(att.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => alert(`Downloading ${att.fileName}...`)}
+                          className="p-1.5 text-gray-400 hover:text-indigo-600 rounded-md transition-colors"
+                          title="Download File"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setAttachments(attachments.filter(a => a.id !== att.id))}
+                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-md transition-colors"
+                          title="Delete Attachment"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

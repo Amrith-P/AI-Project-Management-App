@@ -3,6 +3,7 @@ import { getDb } from '../db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { logActivity } from './activities.js';
 import { createNotification } from './notifications.js';
+import { processAutomations } from './automations.js';
 
 const router = express.Router();
 
@@ -28,14 +29,17 @@ router.get('/', verifyToken, async (req, res) => {
     const db = await getDb();
     
     const tasks = await db.all(`
-      SELECT tasks.*, projects.name as projectName, tm.email as assigneeEmail, u.full_name as assigneeName
+      SELECT DISTINCT tasks.*, projects.name as projectName, tm.email as assigneeEmail, u.full_name as assigneeName
       FROM tasks 
       JOIN projects ON tasks.projectId = projects.id 
-      LEFT JOIN team_members tm ON tasks.assigneeId = tm.id
+      LEFT JOIN team_members tm ON tasks.assigneeId = tm.id OR tm.userId = ? OR tm.email = ?
       LEFT JOIN users u ON tm.userId = u.id OR tm.email = u.email
       WHERE projects.ownerId = ? 
+         OR tm.userId = ? 
+         OR tm.email = ?
+         OR tasks.assigneeId IN (SELECT id FROM team_members WHERE userId = ? OR email = ?)
       ORDER BY tasks.updatedAt DESC
-    `, [req.user.id]);
+    `, [req.user.id, req.user.email, req.user.id, req.user.id, req.user.email, req.user.id, req.user.email]);
     
     const parsedTasks = tasks.map(t => ({
       ...t,
@@ -56,7 +60,7 @@ router.get('/:projectId', verifyToken, async (req, res) => {
     const db = await getDb();
     const { search, priority, assigneeId, label } = req.query;
     
-    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [req.params.projectId, req.user.id]);
+    const project = await db.get('SELECT * FROM projects WHERE id = ?', [req.params.projectId]);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
     let sql = `
@@ -111,7 +115,7 @@ router.post('/:projectId', verifyToken, async (req, res) => {
     const { title, description, status, priority, labels, assigneeId, dueDate, checklist, estimatedHours, spentHours } = req.body;
     const db = await getDb();
     
-    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [req.params.projectId, req.user.id]);
+    const project = await db.get('SELECT * FROM projects WHERE id = ?', [req.params.projectId]);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
     const currentMax = await db.get('SELECT MAX(position) as maxPos FROM tasks WHERE projectId = ? AND status = ?', [req.params.projectId, status || 'Todo']);
@@ -160,8 +164,8 @@ router.put('/detail/:taskId', verifyToken, async (req, res) => {
     const task = await db.get(`
       SELECT tasks.*, projects.name as projectName FROM tasks 
       JOIN projects ON tasks.projectId = projects.id 
-      WHERE tasks.id = ? AND projects.ownerId = ?
-    `, [req.params.taskId, req.user.id]);
+      WHERE tasks.id = ?
+    `, [req.params.taskId]);
     
     if (!task) return res.status(404).json({ message: 'Task not found' });
 

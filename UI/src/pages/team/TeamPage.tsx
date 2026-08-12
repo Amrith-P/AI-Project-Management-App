@@ -138,10 +138,15 @@ export const TeamPage: React.FC = () => {
                           <select
                             value={member.role}
                             onChange={(e) => handleRoleChange(member.id, e.target.value as TeamRole)}
-                            className="text-xs font-semibold border-gray-200 rounded-lg p-1.5 focus:ring-indigo-500 bg-gray-50 outline-none"
+                            className="text-xs font-semibold border-gray-200 dark:border-gray-700 rounded-lg p-1.5 focus:ring-indigo-500 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
                           >
-                            <option value="Member">Member</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="Tech Lead">Tech Lead</option>
+                            <option value="Developer">Developer</option>
+                            <option value="Designer">Designer</option>
+                            <option value="QA Engineer">QA Engineer</option>
                             <option value="Admin">Admin</option>
+                            <option value="Member">Member</option>
                           </select>
                         </div>
 

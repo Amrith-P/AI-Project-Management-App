@@ -8,6 +8,10 @@ import teamRoutes from './routes/team.js';
 import aiRoutes from './routes/ai.js';
 import activitiesRoutes from './routes/activities.js';
 import notificationsRoutes from './routes/notifications.js';
+import automationsRoutes from './routes/automations.js';
+import attachmentsRoutes from './routes/attachments.js';
+import sprintsRoutes from './routes/sprints.js';
+import { seedDatabase } from './seed.js';
 
 dotenv.config();
 
@@ -24,11 +28,15 @@ app.use('/api/team', teamRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/automations', automationsRoutes);
+app.use('/api/attachments', attachmentsRoutes);
+app.use('/api/sprints', sprintsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  await seedDatabase();
 });

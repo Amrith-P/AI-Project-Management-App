@@ -120,3 +120,23 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
 
 #### Phase 3D: Global Search & Kanban Multi-Filter System
 - **Backend & Frontend**: Search query, priority, assignee, and tag/label filters in `GET /api/projects/:projectId/tasks` and `BoardFilterBar.tsx` integrated into `Board.tsx`.
+
+---
+
+### Phase 4: AI Automations Engine, Task Attachments, Gantt Schedule & Export Suite (COMPLETED)
+
+#### Phase 4A: AI Automation Engine & Smart Rule Triggers
+- **Backend**: `automations` table in `Backend/db.js`, `Backend/routes/automations.js` router, and `processAutomations()` trigger helper.
+- **Frontend**: `AutomationModal.tsx` workflow rule builder with `⚡ AI Automations` button in `ProjectDetailsPage.tsx`.
+
+#### Phase 4B: Task File Attachments & Asset Manager
+- **Backend**: `task_attachments` table in `Backend/db.js` and `Backend/routes/attachments.js` router.
+- **Frontend**: Attachments tab in `TaskDetailModal.tsx` with drag-and-drop uploader, file size display, download actions, and remove controls.
+
+#### Phase 4C: Custom Sprint Planner & Gantt Schedule View
+- **Backend**: `sprints` table in `Backend/db.js` and `Backend/routes/sprints.js` router.
+- **Frontend**: `GanttTimelineView.tsx` visual Gantt chart with priority colors & status progress indicators added to `ProjectDetailsPage.tsx`.
+
+#### Phase 4D: Executive Project Export Suite
+- **Backend**: `GET /api/projects/:id/export` endpoint in `Backend/routes/projects.js`.
+- **Frontend**: `ExportReportModal.tsx` interactive report exporter for Markdown (`.md`) and JSON (`.json`) files.
