@@ -132,6 +132,30 @@ export const getDb = async () => {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS webhooks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ownerId INTEGER NOT NULL,
+        provider TEXT NOT NULL,
+        webhookUrl TEXT NOT NULL,
+        secret TEXT,
+        events TEXT,
+        isActive INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ownerId) REFERENCES users (id)
+      );
+
+      CREATE TABLE IF NOT EXISTS task_time_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER NOT NULL,
+        userId INTEGER NOT NULL,
+        durationMinutes INTEGER NOT NULL DEFAULT 0,
+        description TEXT,
+        isBillable INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES users (id)
+      );
     `);
     
     // Auto-migrate existing tables

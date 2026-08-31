@@ -487,15 +487,108 @@ router.post('/milestone-summary', verifyToken, async (req, res) => {
 
 #### Completed Milestones (${completedTasks.length}/${tasks.length}):
 ${completedTasks.length > 0 ? completedTasks.map(t => `- ✅ **${t.title}**`).join('\n') : '- Initial project kickoff completed.'}
-
-#### Next Focus Items:
-${tasks.filter(t => t.status === 'Doing' || t.status === 'Todo').slice(0, 3).map(t => `- ⏳ **${t.title}** (${t.priority} Priority)`).join('\n')}
 `;
 
     res.json({ summaryReport });
   } catch (error) {
     console.error('Error in milestone-summary:', error);
     res.status(500).json({ message: 'Failed to generate milestone summary' });
+  }
+});
+
+// POST /api/ai/auto-schedule (Smart Workload Balancer & AI Task Scheduler)
+router.post('/auto-schedule', verifyToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    if (!projectId) return res.status(400).json({ message: 'projectId is required' });
+
+    const db = await getDb();
+    const project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    const tasks = await db.all('SELECT * FROM tasks WHERE projectId = ?', [projectId]);
+    const teamMembers = await db.all(
+      `SELECT tm.id as memberId, tm.role, u.full_name as name, u.email 
+       FROM team_members tm 
+       LEFT JOIN users u ON tm.userId = u.id 
+       WHERE tm.ownerId = ?`,
+      [req.user.id]
+    );
+
+    const owner = await db.get('SELECT id as memberId, role, full_name as name, email FROM users WHERE id = ?', [req.user.id]);
+    const allMembers = [owner, ...teamMembers].filter(Boolean);
+
+    // Calculate current workload per member
+    const memberWorkloadMap = new Map();
+    allMembers.forEach(m => {
+      memberWorkloadMap.set(m.memberId || m.id, { name: m.name || m.email, count: 0 });
+    });
+
+    tasks.forEach(t => {
+      if (t.assigneeId && memberWorkloadMap.has(t.assigneeId)) {
+        const item = memberWorkloadMap.get(t.assigneeId);
+        item.count += 1;
+      }
+    });
+
+    // Auto-schedule algorithm: assign unassigned tasks to member with lowest count & set realistic due dates
+    const unassignedTasks = tasks.filter(t => !t.assigneeId && t.status !== 'Done');
+    const reassignments = [];
+    const dependencyWarnings = [];
+
+    let today = new Date();
+    let dayOffset = 1;
+
+    for (const t of unassignedTasks) {
+      // Find member with lowest current load
+      let leastLoaded = allMembers[0];
+      let minCount = Infinity;
+      allMembers.forEach(m => {
+        const load = memberWorkloadMap.get(m.memberId || m.id)?.count || 0;
+        if (load < minCount) {
+          minCount = load;
+          leastLoaded = m;
+        }
+      });
+
+      const memberId = leastLoaded.memberId || leastLoaded.id;
+      const suggestedDate = new Date(today.getTime() + dayOffset * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      dayOffset += 2;
+
+      reassignments.push({
+        taskId: t.id,
+        taskTitle: t.title,
+        priority: t.priority,
+        suggestedAssigneeId: memberId,
+        suggestedAssigneeName: leastLoaded.name || leastLoaded.email,
+        suggestedDueDate: suggestedDate,
+        reason: `Assigned based on workload capacity (${minCount} active tasks)`
+      });
+
+      // Update map for next iteration
+      const item = memberWorkloadMap.get(memberId);
+      if (item) item.count += 1;
+    }
+
+    // Check for high-priority tasks missing due dates
+    tasks.forEach(t => {
+      if (t.priority === 'High' && !t.dueDate && t.status !== 'Done') {
+        dependencyWarnings.push(`High priority task "${t.title}" lacks a target due date.`);
+      }
+    });
+
+    res.json({
+      projectId,
+      projectName: project.name,
+      totalTasks: tasks.length,
+      unassignedCount: unassignedTasks.length,
+      reassignments,
+      dependencyWarnings,
+      summary: `AI Auto-Scheduler analyzed ${allMembers.length} team members and generated ${reassignments.length} optimal task assignment recommendations.`
+    });
+  } catch (error) {
+    console.error('Error in auto-schedule:', error);
+    res.status(500).json({ message: 'Failed to auto-schedule tasks', error: error.message });
   }
 });
 

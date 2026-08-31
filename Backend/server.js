@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { initSocket } from './socket.js';
 import authRoutes from './routes/auth.js';
 import projectsRoutes from './routes/projects.js';
 import tasksRoutes from './routes/tasks.js';
@@ -11,6 +13,8 @@ import notificationsRoutes from './routes/notifications.js';
 import automationsRoutes from './routes/automations.js';
 import attachmentsRoutes from './routes/attachments.js';
 import sprintsRoutes from './routes/sprints.js';
+import webhooksRoutes from './routes/webhooks.js';
+import timeLogsRoutes from './routes/timeLogs.js';
 import { seedDatabase } from './seed.js';
 
 dotenv.config();
@@ -31,12 +35,18 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/automations', automationsRoutes);
 app.use('/api/attachments', attachmentsRoutes);
 app.use('/api/sprints', sprintsRoutes);
+app.use('/api/webhooks', webhooksRoutes);
+app.use('/api/time-logs', timeLogsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.listen(PORT, async () => {
+const server = createServer(app);
+initSocket(server);
+
+server.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   await seedDatabase();
 });
+
