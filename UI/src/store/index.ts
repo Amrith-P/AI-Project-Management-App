@@ -6,6 +6,7 @@ import teamReducer from './slices/teamSlice';
 import aiReducer from './slices/aiSlice';
 import activityReducer from './slices/activitySlice';
 import notificationReducer from './slices/notificationSlice';
+import themeReducer from './slices/themeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,8 +17,10 @@ export const store = configureStore({
     ai: aiReducer,
     activities: activityReducer,
     notifications: notificationReducer,
+    theme: themeReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+

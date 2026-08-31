@@ -22,6 +22,9 @@ import { AIRiskPredictorWidget } from '../../components/ai/AIRiskPredictorWidget
 import { GanttTimelineView } from '../../components/timeline/GanttTimelineView';
 import { AutomationModal } from '../../components/automations/AutomationModal';
 import { ExportReportModal } from '../../components/projects/ExportReportModal';
+import { AISchedulerModal } from '../../components/ai/AISchedulerModal';
+import { useSocket } from '../../context/SocketContext';
+import { Sparkles as SparklesIcon } from 'lucide-react';
 
 export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,11 +32,14 @@ export const ProjectDetailsPage: React.FC = () => {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isAutomationModalOpen, setIsAutomationModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isSchedulerModalOpen, setIsSchedulerModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'board' | 'timeline'>('overview');
   
   const dispatch = useDispatch<AppDispatch>();
   const { currentProject, isLoading, error } = useSelector((state: RootState) => state.projects);
   const { tasks } = useSelector((state: RootState) => state.tasks);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const { joinProjectRoom, leaveProjectRoom } = useSocket();
 
   useEffect(() => {
     if (id) {
@@ -43,6 +49,19 @@ export const ProjectDetailsPage: React.FC = () => {
       dispatch(clearCurrentProject());
     };
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (currentProject?.id && user) {
+      joinProjectRoom(Number(currentProject.id), {
+        id: user.id,
+        name: user.full_name,
+        email: user.email,
+      });
+      return () => {
+        leaveProjectRoom(Number(currentProject.id));
+      };
+    }
+  }, [currentProject?.id, user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -115,6 +134,15 @@ export const ProjectDetailsPage: React.FC = () => {
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(currentProject.status)}`}>
                 {currentProject.status}
               </span>
+
+              {/* AI Auto-Schedule Button */}
+              <button
+                onClick={() => setIsSchedulerModalOpen(true)}
+                className="inline-flex items-center px-3.5 py-2 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-bold transition-all shadow-2xs"
+              >
+                <SparklesIcon className="w-4 h-4 mr-1.5 text-purple-600 dark:text-purple-400" />
+                AI Auto-Schedule
+              </button>
 
               {/* AI Automations Button */}
               <button
@@ -321,6 +349,15 @@ export const ProjectDetailsPage: React.FC = () => {
           onClose={() => setIsExportModalOpen(false)}
           projectId={currentProject.id}
           projectName={currentProject.name}
+        />
+      )}
+
+      {isSchedulerModalOpen && (
+        <AISchedulerModal
+          isOpen={isSchedulerModalOpen}
+          onClose={() => setIsSchedulerModalOpen(false)}
+          projectId={Number(currentProject.id)}
+          onApplySchedule={() => dispatch(fetchProjectById(id!))}
         />
       )}
     </div>

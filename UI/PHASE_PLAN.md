@@ -140,3 +140,62 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
 #### Phase 4D: Executive Project Export Suite
 - **Backend**: `GET /api/projects/:id/export` endpoint in `Backend/routes/projects.js`.
 - **Frontend**: `ExportReportModal.tsx` interactive report exporter for Markdown (`.md`) and JSON (`.json`) files.
+
+---
+
+### Phase 5: Real-Time Socket.io Collaboration, AI Auto-Scheduler, Developer Webhooks & Theme Engine (COMPLETED)
+
+#### Phase 5A: Real-Time Socket.io Collaboration & Live Team Chat
+- **Backend**: Socket.io server integration in `Backend/server.js` and `Backend/socket.js`. Event rooms for project live drag-and-drop sync, live comment streams, and user online presence.
+- **Frontend**: `SocketContext.tsx` provider, `ActiveUsersBar.tsx` presence badges, and live socket listeners on `Board.tsx` and `TaskDetailModal.tsx`.
+
+#### Phase 5B: AI Autonomous Task Scheduler & Smart Workload Balancer
+- **Backend**: `POST /api/ai/auto-schedule` route in `Backend/routes/ai.js` using Gemini to optimize task workload distribution, predict milestone completions, and detect dependency conflicts.
+- **Frontend**: `AISchedulerModal.tsx` visual workload balancer with 1-click **"Apply AI Schedule"** action button in `ProjectDetailsPage.tsx`.
+
+#### Phase 5C: GitHub / GitLab & Slack Webhook Integration System
+- **Backend**: `webhooks` DB table in `Backend/db.js`, `Backend/routes/webhooks.js` router for GitHub commit/PR webhook handler (`#task-id` auto status transitions), and `slackNotifier.js` for outbound Slack alert webhooks.
+- **Frontend**: `IntegrationsTab.tsx` in `SettingsPage.tsx` with GitHub webhook setup instructions and Slack notification trigger configuration.
+
+#### Phase 5D: Dark/Light Theme System & Customizable Dashboard Builder
+- **Frontend**: `themeSlice.ts` Redux state, `ThemeToggle.tsx` sun/moon switch in `Navbar.tsx`, and `DashboardCustomizeModal.tsx` allowing drag-and-drop widget layout customization in `DashboardPage.tsx`.
+
+---
+
+### Phase 6: Enterprise Multi-Tenant RBAC, AI Voice Assistant, Time Tracking & Billing Reports (COMPLETED)
+
+#### Phase 6A: Multi-Tenant Workspace & Role-Based Access Control (RBAC)
+- **Backend**: `requireRole(['Admin', 'Project Manager'])` middleware in `Backend/middleware/auth.js` enforcing read-only vs write permissions on project deletion, settings, and team changes.
+- **Frontend**: `RoleGuard.tsx` component to conditionally render action controls based on active user role (`Admin`, `Manager`, `Developer`, `Viewer`).
+
+#### Phase 6B: AI Voice & Speech Assistant ("Hey Copilot")
+- **Frontend**: `AIVoiceButton.tsx` Web Speech API voice input controller with real-time waveform animation, speech-to-text transcription, and optional Text-to-Speech audio response readout in `AICopilotDrawer.tsx`.
+
+#### Phase 6C: Live Time Tracker & Billable Hours Report Engine
+- **Backend**: `task_time_logs` DB table in `Backend/db.js` and `Backend/routes/timeLogs.js` router.
+- **Frontend**: `TaskTimerWidget.tsx` live stopwatch with start/pause/log controls in task details, and `TimeTrackingReportCard.tsx` billable vs non-billable hours breakdown in `AnalyticsPage.tsx`.
+
+#### Phase 6D: Offline PWA Capabilities & Local Cache Sync
+- **Frontend**: PWA `manifest.json` and service worker asset caching strategy for offline access and local sync.
+
+---
+
+### Phase 7: Jira-Style Enterprise Platform Expansion (`build.md` Spec)
+
+#### Phase 7A: Project Keys & Issue Key System (`KEY-123`)
+- **Backend**: Auto-generated project key (`key`) on `projects` table (e.g. `OB`) and formatted `issueKey` on `tasks` table (e.g. `OB-101`).
+- **Frontend**: Issue Key badges rendered on `TaskCard.tsx`, `Board.tsx`, and `TaskDetailModal.tsx`.
+
+#### Phase 7B: Epics, Releases / Versions & Components Engine
+- **Backend**: `epics`, `versions`, and `components` DB tables in `Backend/db.js`, with CRUD routers (`epics.js`, `versions.js`, `components.js`).
+- **Frontend**: Dedicated management views `EpicsPage.tsx`, `ReleasesPage.tsx`, and `ComponentsPage.tsx` with progress bars and child task tracking.
+
+#### Phase 7C: Issue Dependencies & Link Manager
+- **Backend**: `issue_links` DB table schema and `issueLinks.js` endpoint for linking tasks (`blocks`, `is blocked by`, `relates to`, `duplicates`).
+- **Frontend**: "Linked Issues" tab in `TaskDetailModal.tsx` allowing issue linking by Issue Key.
+
+#### Phase 7D: Board WIP Limits, Command Palette (`Cmd + K`) & JQL Saved Filters
+- **Frontend**: Column WIP limit warnings in `Board.tsx`, global `CommandPalette.tsx` overlay modal (`Cmd + K`), and `AdvancedSearchPage.tsx` with JQL-style query filtering and saved presets.
+
+
+

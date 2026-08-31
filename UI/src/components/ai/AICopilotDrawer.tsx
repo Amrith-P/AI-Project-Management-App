@@ -13,6 +13,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { AIVoiceButton } from './AIVoiceButton';
+
 interface AICopilotDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -220,6 +222,12 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({ isOpen, onClos
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+          />
+          <AIVoiceButton
+            onTranscript={(transcript) => {
+              setInputText(transcript);
+              handleSendMessage(transcript);
+            }}
           />
           <button
             type="submit"

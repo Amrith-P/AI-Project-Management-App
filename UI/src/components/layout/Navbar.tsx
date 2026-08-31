@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useTheme } from '../../context/ThemeContext';
 
+import { ActiveUsersBar } from '../common/ActiveUsersBar';
+
 interface NavbarProps {
   onToggleAiCopilot?: () => void;
 }
@@ -59,6 +61,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleAiCopilot }) => {
       </div>
 
       <div className="flex items-center space-x-3">
+        {/* Active Presence Bar */}
+        <ActiveUsersBar />
         {/* Quick Theme Toggle Button */}
         <button
           onClick={toggleTheme}

@@ -3,6 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { Sun, Moon, User, Check, Palette } from 'lucide-react';
+import { IntegrationsTab } from '../../components/settings/IntegrationsTab';
 
 export const SettingsPage: React.FC = () => {
   const { theme, setTheme, toggleTheme } = useTheme();
@@ -14,9 +15,12 @@ export const SettingsPage: React.FC = () => {
       <div className="border-b border-gray-200 dark:border-gray-800 pb-5">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Application Settings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Customize your theme preferences, appearance mode, and system settings.
+          Customize your theme preferences, appearance mode, system settings, and developer webhooks.
         </p>
       </div>
+
+      {/* Developer Integrations & Webhooks Section */}
+      <IntegrationsTab />
 
       {/* Theme & Appearance Section */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs p-6 space-y-6">

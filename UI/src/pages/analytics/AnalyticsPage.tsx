@@ -17,6 +17,8 @@ import {
   PieChart
 } from 'lucide-react';
 
+import { TimeTrackingReportCard } from '../../components/analytics/TimeTrackingReportCard';
+
 interface AnalyticsData {
   totalTasks: number;
   statusCounts: { Todo: number; Doing: number; Testing: number; Done: number };
@@ -191,6 +193,9 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Time Tracking & Billing Report Card */}
+          <TimeTrackingReportCard projectId={selectedProjectId === 'all' ? Number(projects[0]?.id || 1) : Number(selectedProjectId)} />
 
           {/* Visual Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
