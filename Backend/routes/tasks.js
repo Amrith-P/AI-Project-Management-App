@@ -141,8 +141,11 @@ router.post('/:projectId', verifyToken, async (req, res) => {
       spentHours || 0
     ]);
     
+    const issueKey = `${project.key || 'PROJ'}-${result.lastID}`;
+    await db.run('UPDATE tasks SET issueKey = ? WHERE id = ?', [issueKey, result.lastID]);
+
     await updateProjectProgress(db, req.params.projectId);
-    await logActivity(req.user.id, project.id, 'Created Task', `Created task "${title}" in ${project.name}`);
+    await logActivity(req.user.id, project.id, 'Created Task', `Created task "${title}" [${issueKey}] in ${project.name}`);
 
     const newTask = await db.get('SELECT * FROM tasks WHERE id = ?', [result.lastID]);
     if (newTask.labels) newTask.labels = JSON.parse(newTask.labels);

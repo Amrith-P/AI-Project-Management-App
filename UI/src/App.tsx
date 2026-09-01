@@ -15,12 +15,35 @@ import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { SocketProvider } from './context/SocketContext';
+import { EpicsPage } from './pages/projects/EpicsPage';
+import { ReleasesPage } from './pages/projects/ReleasesPage';
+import { ComponentsPage } from './pages/projects/ComponentsPage';
+import { AdvancedSearchPage } from './pages/search/AdvancedSearchPage';
+import { CommandPalette } from './components/common/CommandPalette';
+import { useState, useEffect } from 'react';
 
 function App() {
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <ThemeProvider>
       <SocketProvider>
         <BrowserRouter>
+          <CommandPalette
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+          />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
@@ -38,8 +61,12 @@ function App() {
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+                <Route path="/projects/:id/epics" element={<EpicsPage />} />
+                <Route path="/projects/:id/releases" element={<ReleasesPage />} />
+                <Route path="/projects/:id/components" element={<ComponentsPage />} />
                 <Route path="/tasks" element={<TasksPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/search" element={<AdvancedSearchPage />} />
                 <Route path="/team" element={<TeamPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

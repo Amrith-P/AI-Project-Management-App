@@ -15,7 +15,8 @@ import {
   Paperclip,
   FileText,
   Upload,
-  Download
+  Download,
+  Link2
 } from 'lucide-react';
 
 interface TaskDetailModalProps {
@@ -40,7 +41,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
   const [checklist, setChecklist] = useState<CheckItem[]>(task.checklist || []);
   const [newCheckItem, setNewCheckItem] = useState('');
   const [newComment, setNewComment] = useState('');
-  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'attachments'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'attachments' | 'linked'>('details');
   const [attachments, setAttachments] = useState<any[]>([]);
   const [newFileName, setNewFileName] = useState('');
 
@@ -122,11 +123,11 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-3xl overflow-hidden animate-scale-up">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-gray-900 to-indigo-950 p-6 text-white flex justify-between items-start">
-          <div className="space-y-2 flex-1 pr-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold uppercase tracking-wider bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2.5 py-0.5 rounded-full">
-                Task #{task.id}
+        <div className="bg-slate-900 p-6 flex justify-between items-start border-b border-slate-800">
+          <div className="space-y-1.5 flex-1 mr-4">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 font-mono font-bold text-xs">
+                {(task as any).issueKey || `TASK-${task.id}`}
               </span>
               <span className="text-xs font-medium text-gray-300">
                 {task.projectName || 'Project Task'}
@@ -191,6 +192,17 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, isOpen, 
           >
             <Paperclip className="w-4 h-4" />
             Attachments ({attachments.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('linked')}
+            className={`py-3.5 px-1 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'linked'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Link2 className="w-4 h-4" />
+            Linked Issues
           </button>
         </div>
 

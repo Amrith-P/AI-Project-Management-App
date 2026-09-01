@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Users, FolderKanban, Settings, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Users, FolderKanban, Settings, BarChart3, Search } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const navItems = [
@@ -8,6 +8,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Projects', path: '/projects', icon: FolderKanban },
     { name: 'Tasks', path: '/tasks', icon: CheckSquare },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Advanced Search', path: '/search', icon: Search },
     { name: 'Team', path: '/team', icon: Users },
   ];
 

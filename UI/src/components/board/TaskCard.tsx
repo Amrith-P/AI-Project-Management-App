@@ -43,7 +43,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
         className={`bg-white p-4 rounded-xl shadow-xs border border-gray-200/90 cursor-grab active:cursor-grabbing mb-3 transition-all duration-200 hover:shadow-md hover:border-indigo-400 transform hover:-translate-y-0.5 ${isDragging ? 'opacity-40 scale-95' : 'opacity-100'}`}
       >
         <div className="flex justify-between items-start mb-2 gap-2">
-          <h4 className="text-sm font-semibold text-gray-900 leading-snug">{task.title}</h4>
+          <div className="space-y-0.5">
+            <span className="inline-block px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-mono font-bold text-[10px]">
+              {(task as any).issueKey || `TASK-${task.id}`}
+            </span>
+            <h4 className="text-sm font-semibold text-gray-900 leading-snug">{task.title}</h4>
+          </div>
           {task.priority && (
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center shrink-0 ${getPriorityColor(task.priority)}`}>
               {task.priority}

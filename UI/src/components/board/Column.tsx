@@ -37,6 +37,16 @@ export const Column: React.FC<ColumnProps> = ({ status, tasks, onDropTask, onAdd
     }
   };
 
+  const wipLimits: Record<TaskStatus, number | null> = {
+    Todo: null,
+    Doing: 5,
+    Testing: 4,
+    Done: null,
+  };
+
+  const currentWipLimit = wipLimits[status];
+  const isWipExceeded = currentWipLimit !== null && tasks.length > currentWipLimit;
+
   return (
     <div className="flex flex-col w-80 shrink-0">
       <div className="flex items-center justify-between mb-4">
@@ -44,7 +54,9 @@ export const Column: React.FC<ColumnProps> = ({ status, tasks, onDropTask, onAdd
           <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(status)}`}>
             {status}
           </span>
-          <span className="text-xs font-medium text-gray-500">{tasks.length}</span>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isWipExceeded ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse' : 'text-gray-500'}`}>
+            {tasks.length}{currentWipLimit !== null ? `/${currentWipLimit} WIP` : ''}
+          </span>
         </div>
         <button
           onClick={() => onAddTask(status)}

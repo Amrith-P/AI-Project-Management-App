@@ -214,6 +214,24 @@ export const ProjectDetailsPage: React.FC = () => {
           >
             Gantt Schedule
           </button>
+          <Link
+            to={`/projects/${id}/epics`}
+            className="whitespace-nowrap pb-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Epics
+          </Link>
+          <Link
+            to={`/projects/${id}/releases`}
+            className="whitespace-nowrap pb-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Releases
+          </Link>
+          <Link
+            to={`/projects/${id}/components`}
+            className="whitespace-nowrap pb-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Components
+          </Link>
         </nav>
       </div>
 

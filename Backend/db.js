@@ -156,9 +156,56 @@ export const getDb = async () => {
         FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE,
         FOREIGN KEY (userId) REFERENCES users (id)
       );
+
+      CREATE TABLE IF NOT EXISTS epics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        key TEXT,
+        name TEXT NOT NULL,
+        summary TEXT,
+        color TEXT DEFAULT '#6366f1',
+        status TEXT DEFAULT 'In Progress',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS versions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        startDate DATETIME,
+        releaseDate DATETIME,
+        status TEXT DEFAULT 'Unreleased',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS components (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        leadId INTEGER,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS issue_links (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sourceTaskId INTEGER NOT NULL,
+        targetTaskId INTEGER NOT NULL,
+        linkType TEXT DEFAULT 'relates to',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sourceTaskId) REFERENCES tasks (id) ON DELETE CASCADE,
+        FOREIGN KEY (targetTaskId) REFERENCES tasks (id) ON DELETE CASCADE
+      );
     `);
     
     // Auto-migrate existing tables
+    try {
+      await db.exec('ALTER TABLE projects ADD COLUMN key TEXT');
+    } catch (e) { /* Column might already exist */ }
     try {
       await db.exec('ALTER TABLE users ADD COLUMN role TEXT DEFAULT "Project Manager"');
     } catch (e) { /* Column might already exist */ }
@@ -185,6 +232,18 @@ export const getDb = async () => {
     } catch (e) { /* Column might already exist */ }
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN sprintId INTEGER');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN issueKey TEXT');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN epicId INTEGER');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN versionId INTEGER');
+    } catch (e) { /* Column might already exist */ }
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN componentId INTEGER');
     } catch (e) { /* Column might already exist */ }
 
     console.log('SQLite Database initialized');

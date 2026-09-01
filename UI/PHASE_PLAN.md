@@ -180,7 +180,7 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
 
 ---
 
-### Phase 7: Jira-Style Enterprise Platform Expansion (`build.md` Spec)
+### Phase 7: Jira-Style Enterprise Platform Expansion (`build.md` Spec) (COMPLETED)
 
 #### Phase 7A: Project Keys & Issue Key System (`KEY-123`)
 - **Backend**: Auto-generated project key (`key`) on `projects` table (e.g. `OB`) and formatted `issueKey` on `tasks` table (e.g. `OB-101`).
@@ -196,6 +196,26 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
 
 #### Phase 7D: Board WIP Limits, Command Palette (`Cmd + K`) & JQL Saved Filters
 - **Frontend**: Column WIP limit warnings in `Board.tsx`, global `CommandPalette.tsx` overlay modal (`Cmd + K`), and `AdvancedSearchPage.tsx` with JQL-style query filtering and saved presets.
+
+---
+
+### Phase 8: Advanced Automation Engine, Dynamic Custom Fields & Audit Trail System
+
+#### Phase 8A: Visual Rule Automation Engine (WHEN / IF / THEN)
+- **Backend**: `automationEngine.js` trigger execution engine (`WHEN status == Done AND type == Bug -> THEN notify reporter & add comment`).
+- **Frontend**: `AutomationRuleBuilderModal.tsx` visual block rule builder.
+
+#### Phase 8B: Dynamic Custom Fields System
+- **Backend**: `custom_fields` and `task_custom_field_values` tables in `Backend/db.js` and `customFields.js` router.
+- **Frontend**: `CustomFieldsManagerModal.tsx` in project settings and dynamic field renderer in `TaskDetailModal.tsx`.
+
+#### Phase 8C: Enterprise Audit Trail System
+- **Backend**: `audit_logs` table schema and `auditLogs.js` endpoint tracking security actions, permission changes, and project modifications.
+- **Frontend**: `AuditLogsTab.tsx` in `SettingsPage.tsx` with filterable action timeline and user actor badges.
+
+#### Phase 8D: Cumulative Flow Diagram (CFD) & Burnup Reports
+- **Frontend**: Cumulative Flow Diagram (CFD) area chart and Sprint Burnup report card in `AnalyticsPage.tsx`.
+
 
 
 

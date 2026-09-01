@@ -186,20 +186,21 @@ router.get('/:id/analytics', verifyToken, async (req, res) => {
 // POST new project
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const { name, description, status, priority, category, visibility, startDate, endDate, tags, color } = req.body;
+    const { name, description, status, priority, category, visibility, startDate, endDate, tags, color, key: customKey } = req.body;
     const db = await getDb();
     
+    const projectKey = (customKey || name.replace(/[^A-Za-z]/g, '').substring(0, 4).toUpperCase() || 'PROJ');
     const tagsString = tags ? JSON.stringify(tags) : JSON.stringify([]);
     
     const result = await db.run(`
-      INSERT INTO projects (name, description, status, priority, category, visibility, ownerId, startDate, endDate, tags, color)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [name, description, status || 'Active', priority || 'Medium', category, visibility || 'Private', req.user.id, startDate, endDate, tagsString, color]);
+      INSERT INTO projects (name, key, description, status, priority, category, visibility, ownerId, startDate, endDate, tags, color)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [name, projectKey, description, status || 'Active', priority || 'Medium', category, visibility || 'Private', req.user.id, startDate, endDate, tagsString, color]);
     
     const newProject = await db.get('SELECT * FROM projects WHERE id = ?', [result.lastID]);
     newProject.tags = newProject.tags ? JSON.parse(newProject.tags) : [];
     
-    await logActivity(req.user.id, newProject.id, 'Created Project', `Created new project "${newProject.name}"`);
+    await logActivity(req.user.id, newProject.id, 'Created Project', `Created new project "${newProject.name}" [${newProject.key}]`);
 
     res.status(201).json(newProject);
   } catch (error) {

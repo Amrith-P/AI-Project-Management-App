@@ -15,6 +15,10 @@ import attachmentsRoutes from './routes/attachments.js';
 import sprintsRoutes from './routes/sprints.js';
 import webhooksRoutes from './routes/webhooks.js';
 import timeLogsRoutes from './routes/timeLogs.js';
+import epicsRoutes from './routes/epics.js';
+import versionsRoutes from './routes/versions.js';
+import componentsRoutes from './routes/components.js';
+import issueLinksRoutes from './routes/issueLinks.js';
 import { seedDatabase } from './seed.js';
 
 dotenv.config();
@@ -37,6 +41,10 @@ app.use('/api/attachments', attachmentsRoutes);
 app.use('/api/sprints', sprintsRoutes);
 app.use('/api/webhooks', webhooksRoutes);
 app.use('/api/time-logs', timeLogsRoutes);
+app.use('/api/epics', epicsRoutes);
+app.use('/api/versions', versionsRoutes);
+app.use('/api/components', componentsRoutes);
+app.use('/api/issue-links', issueLinksRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
