@@ -200,6 +200,38 @@ export const getDb = async () => {
         FOREIGN KEY (sourceTaskId) REFERENCES tasks (id) ON DELETE CASCADE,
         FOREIGN KEY (targetTaskId) REFERENCES tasks (id) ON DELETE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS custom_fields (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        fieldType TEXT DEFAULT 'Text',
+        options TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS task_custom_field_values (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER NOT NULL,
+        fieldId INTEGER NOT NULL,
+        value TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE,
+        FOREIGN KEY (fieldId) REFERENCES custom_fields (id) ON DELETE CASCADE,
+        UNIQUE(taskId, fieldId)
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER,
+        userName TEXT,
+        action TEXT NOT NULL,
+        entityType TEXT,
+        entityId INTEGER,
+        details TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
     `);
     
     // Auto-migrate existing tables

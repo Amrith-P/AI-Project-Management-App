@@ -19,6 +19,8 @@ import epicsRoutes from './routes/epics.js';
 import versionsRoutes from './routes/versions.js';
 import componentsRoutes from './routes/components.js';
 import issueLinksRoutes from './routes/issueLinks.js';
+import customFieldsRoutes from './routes/customFields.js';
+import auditLogsRoutes from './routes/auditLogs.js';
 import { seedDatabase } from './seed.js';
 
 dotenv.config();
@@ -45,6 +47,8 @@ app.use('/api/epics', epicsRoutes);
 app.use('/api/versions', versionsRoutes);
 app.use('/api/components', componentsRoutes);
 app.use('/api/issue-links', issueLinksRoutes);
+app.use('/api/custom-fields', customFieldsRoutes);
+app.use('/api/audit-logs', auditLogsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
