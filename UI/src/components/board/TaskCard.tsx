@@ -89,6 +89,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 {new Date(task.dueDate).toLocaleDateString()}
               </span>
             )}
+
+            {/* SLA Timer Pill for High/Critical tasks */}
+            {(task.priority === 'High' || task.priority === 'Critical') && task.status !== 'Done' && (
+              <span className="flex items-center gap-1 font-bold px-1.5 py-0.5 rounded text-[10px] text-amber-700 bg-amber-50 border border-amber-200">
+                ⏱️ SLA: 4h
+              </span>
+            )}
           </div>
 
           {/* Assignee Avatar */}

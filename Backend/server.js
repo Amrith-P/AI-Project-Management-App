@@ -21,6 +21,10 @@ import componentsRoutes from './routes/components.js';
 import issueLinksRoutes from './routes/issueLinks.js';
 import customFieldsRoutes from './routes/customFields.js';
 import auditLogsRoutes from './routes/auditLogs.js';
+import workflowsRoutes from './routes/workflows.js';
+import slasRoutes from './routes/slas.js';
+import apiKeysRoutes from './routes/apiKeys.js';
+import { verifyApiKey } from './middleware/apiKeyAuth.js';
 import { seedDatabase } from './seed.js';
 
 dotenv.config();
@@ -30,6 +34,7 @@ const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
+app.use(verifyApiKey);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectsRoutes);
@@ -49,6 +54,9 @@ app.use('/api/components', componentsRoutes);
 app.use('/api/issue-links', issueLinksRoutes);
 app.use('/api/custom-fields', customFieldsRoutes);
 app.use('/api/audit-logs', auditLogsRoutes);
+app.use('/api/workflows', workflowsRoutes);
+app.use('/api/slas', slasRoutes);
+app.use('/api/api-keys', apiKeysRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

@@ -592,4 +592,66 @@ router.post('/auto-schedule', verifyToken, async (req, res) => {
   }
 });
 
+// POST /api/ai/predict-capacity (AI Predictive Capacity & Velocity Forecast)
+router.post('/predict-capacity', verifyToken, async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const db = await getDb();
+
+    let project = null;
+    let tasks = [];
+    if (projectId && projectId !== 'all') {
+      project = await db.get('SELECT * FROM projects WHERE id = ? AND ownerId = ?', [projectId, req.user.id]);
+      if (project) {
+        tasks = await db.all('SELECT * FROM tasks WHERE projectId = ?', [projectId]);
+      }
+    } else {
+      tasks = await db.all(`
+        SELECT t.* FROM tasks t
+        JOIN projects p ON t.projectId = p.id
+        WHERE p.ownerId = ?
+      `, [req.user.id]);
+    }
+
+    const completed = tasks.filter(t => t.status === 'Done');
+    const remaining = tasks.filter(t => t.status !== 'Done');
+    const totalEstHours = remaining.reduce((acc, t) => acc + (t.estimatedHours || 4), 0);
+
+    const teamMembers = await db.all('SELECT * FROM team_members WHERE ownerId = ?', [req.user.id]);
+    const teamSize = Math.max(teamMembers.length + 1, 1);
+    const weeklyCapacityHours = teamSize * 30; // ~30 productive hours/dev/week
+
+    const estimatedWeeks = totalEstHours > 0 ? (totalEstHours / weeklyCapacityHours).toFixed(1) : '1.0';
+
+    // Burnout risk score logic
+    const overAllocatedTasks = tasks.filter(t => (t.estimatedHours || 0) > 16);
+    let burnoutScore = Math.min(Math.round((remaining.length / (teamSize * 3)) * 25 + overAllocatedTasks.length * 10), 95);
+
+    const forecastProbabilities = [
+      { date: 'Optimistic (90% prob)', weeks: `${(Number(estimatedWeeks) * 0.8).toFixed(1)} weeks` },
+      { date: 'Expected (75% prob)', weeks: `${estimatedWeeks} weeks` },
+      { date: 'Conservative (50% prob)', weeks: `${(Number(estimatedWeeks) * 1.3).toFixed(1)} weeks` }
+    ];
+
+    res.json({
+      projectName: project ? project.name : 'Workspace Wide',
+      teamSize,
+      totalRemainingTasks: remaining.length,
+      totalEstHours,
+      weeklyCapacityHours,
+      estimatedWeeksToCompletion: estimatedWeeks,
+      burnoutRiskScore: burnoutScore,
+      burnoutLevel: burnoutScore > 70 ? 'High' : burnoutScore > 40 ? 'Moderate' : 'Low',
+      forecastProbabilities,
+      recommendations: [
+        burnoutScore > 50 ? 'Consider breaking down complex tasks over 16 estimated hours into smaller subtasks.' : 'Team capacity is well-balanced.',
+        'Sprint velocity remains steady at ~' + Math.round(weeklyCapacityHours / 4) + ' story points/week.'
+      ]
+    });
+  } catch (error) {
+    console.error('Error in predict-capacity:', error);
+    res.status(500).json({ message: 'Failed to predict capacity' });
+  }
+});
+
 export default router;

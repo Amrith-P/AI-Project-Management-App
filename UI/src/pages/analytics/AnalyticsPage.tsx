@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { TimeTrackingReportCard } from '../../components/analytics/TimeTrackingReportCard';
+import { VelocityCapacityWidget } from '../../components/analytics/VelocityCapacityWidget';
 
 interface AnalyticsData {
   totalTasks: number;
@@ -193,6 +194,9 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* AI Capacity & Velocity Forecast Widget */}
+          <VelocityCapacityWidget projectId={selectedProjectId === 'all' ? undefined : selectedProjectId} />
 
           {/* Time Tracking & Billing Report Card */}
           <TimeTrackingReportCard projectId={selectedProjectId === 'all' ? Number(projects[0]?.id || 1) : Number(selectedProjectId)} />

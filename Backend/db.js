@@ -232,6 +232,40 @@ export const getDb = async () => {
         details TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS workflows (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        nodes TEXT,
+        transitions TEXT,
+        isDefault INTEGER DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS slas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER NOT NULL,
+        issueType TEXT DEFAULT 'Bug',
+        priority TEXT DEFAULT 'High',
+        responseHours REAL DEFAULT 4,
+        resolutionHours REAL DEFAULT 24,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        keyHash TEXT NOT NULL,
+        keyPrefix TEXT NOT NULL,
+        scopes TEXT,
+        lastUsedAt DATETIME,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+      );
     `);
     
     // Auto-migrate existing tables

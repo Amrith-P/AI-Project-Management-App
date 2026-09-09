@@ -5,6 +5,7 @@ import type { RootState } from '../../store';
 import { Sun, Moon, User, Check, Palette } from 'lucide-react';
 import { IntegrationsTab } from '../../components/settings/IntegrationsTab';
 import { AuditLogsTab } from '../../components/settings/AuditLogsTab';
+import { APIKeysTab } from '../../components/settings/APIKeysTab';
 
 export const SettingsPage: React.FC = () => {
   const { theme, setTheme, toggleTheme } = useTheme();
@@ -23,6 +24,11 @@ export const SettingsPage: React.FC = () => {
       {/* Audit Trail Section */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs p-6">
         <AuditLogsTab />
+      </div>
+
+      {/* Personal Access Tokens & API Keys Section */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs p-6">
+        <APIKeysTab />
       </div>
 
       {/* Developer Integrations & Webhooks Section */}

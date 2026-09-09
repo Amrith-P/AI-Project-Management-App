@@ -23,8 +23,10 @@ import { GanttTimelineView } from '../../components/timeline/GanttTimelineView';
 import { AutomationModal } from '../../components/automations/AutomationModal';
 import { ExportReportModal } from '../../components/projects/ExportReportModal';
 import { AISchedulerModal } from '../../components/ai/AISchedulerModal';
+import { WorkflowCanvasModal } from '../../components/workflows/WorkflowCanvasModal';
+import { SLAManagerModal } from '../../components/sla/SLAManagerModal';
 import { useSocket } from '../../context/SocketContext';
-import { Sparkles as SparklesIcon } from 'lucide-react';
+import { Sparkles as SparklesIcon, GitCommit, Clock } from 'lucide-react';
 
 export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +35,8 @@ export const ProjectDetailsPage: React.FC = () => {
   const [isAutomationModalOpen, setIsAutomationModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isSchedulerModalOpen, setIsSchedulerModalOpen] = useState(false);
+  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+  const [isSlaModalOpen, setIsSlaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'board' | 'timeline'>('overview');
   
   const dispatch = useDispatch<AppDispatch>();
@@ -151,6 +155,24 @@ export const ProjectDetailsPage: React.FC = () => {
               >
                 <Zap className="w-4 h-4 mr-1.5 text-indigo-600 dark:text-indigo-400" />
                 AI Automations
+              </button>
+
+              {/* Visual Workflow Canvas Button */}
+              <button
+                onClick={() => setIsWorkflowModalOpen(true)}
+                className="inline-flex items-center px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs"
+              >
+                <GitCommit className="w-4 h-4 mr-1.5 text-slate-600 dark:text-slate-400" />
+                Workflow Canvas
+              </button>
+
+              {/* SLA Engine Manager Button */}
+              <button
+                onClick={() => setIsSlaModalOpen(true)}
+                className="inline-flex items-center px-3.5 py-2 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-bold transition-all shadow-2xs"
+              >
+                <Clock className="w-4 h-4 mr-1.5 text-amber-600 dark:text-amber-400" />
+                SLA Rules
               </button>
 
               {/* Export Executive Report Button */}
@@ -376,6 +398,22 @@ export const ProjectDetailsPage: React.FC = () => {
           onClose={() => setIsSchedulerModalOpen(false)}
           projectId={Number(currentProject.id)}
           onApplySchedule={() => dispatch(fetchProjectById(id!))}
+        />
+      )}
+
+      {isWorkflowModalOpen && (
+        <WorkflowCanvasModal
+          isOpen={isWorkflowModalOpen}
+          onClose={() => setIsWorkflowModalOpen(false)}
+          projectId={Number(currentProject.id)}
+        />
+      )}
+
+      {isSlaModalOpen && (
+        <SLAManagerModal
+          isOpen={isSlaModalOpen}
+          onClose={() => setIsSlaModalOpen(false)}
+          projectId={Number(currentProject.id)}
         />
       )}
     </div>
