@@ -216,6 +216,27 @@ This document details the exact **phase-by-phase and day-by-day roadmap** for co
 #### Phase 8D: Cumulative Flow Diagram (CFD) & Burnup Reports
 - **Frontend**: Cumulative Flow Diagram (CFD) area chart and Sprint Burnup report card in `AnalyticsPage.tsx`.
 
+---
+
+### Phase 9: Visual Workflow Canvas, AI Capacity Planner, SLA Engine & Developer API (PROPOSED NEXT PHASE)
+
+#### Phase 9A: Visual Drag-and-Drop Workflow Canvas Builder
+- **Backend**: `workflows` and `workflow_transitions` DB tables in `Backend/db.js`, with `workflows.js` router.
+- **Frontend**: Interactive node-graph Workflow Editor canvas in Project Settings allowing admins to define custom issue statuses, transition rules, required fields, and auto-actions.
+
+#### Phase 9B: AI Predictive Capacity & Sprint Velocity Planning Engine
+- **Backend**: `POST /api/ai/predict-capacity` endpoint in `Backend/routes/ai.js` using historical sprint velocity & task metrics to compute completion probability curves and developer burnout risk.
+- **Frontend**: `VelocityCapacityWidget.tsx` integrated into Sprint Planning & Backlog views.
+
+#### Phase 9C: SLA & Incident Management Engine (Service Desk Metrics)
+- **Backend**: `slas` and `task_sla_breaches` DB tables with automatic SLA deadline tracking for Bug/Incident issues.
+- **Frontend**: SLA countdown timers on issue cards and SLA compliance report card in `AnalyticsPage.tsx`.
+
+#### Phase 9D: Developer API Key Suite & Third-Party Webhook Explorer
+- **Backend**: `api_keys` DB table and Bearer API Key middleware (`Backend/middleware/apiKeyAuth.js`).
+- **Frontend**: `APIKeysTab.tsx` in `SettingsPage.tsx` allowing developers to generate personal access tokens (PAT) and test API endpoints.
+
+
 
 
 
